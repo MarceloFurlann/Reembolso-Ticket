@@ -1,4 +1,4 @@
-const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?output=csv";
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=XXXX&single=true&output=csv";
 
 async function carregarDados() {
     try {
@@ -45,3 +45,4 @@ async function carregarDados() {
 }
 
 carregarDados();
+
