@@ -4,34 +4,30 @@ async function carregarTabela() {
     try {
         const response = await fetch(urlCSV);
         const data = await response.text();
-        console.log("CSV carregado:", data.substring(0, 300));
-
         const linhas = data.split("\n").map(l => l.split(","));
-        console.log("Total de linhas:", linhas.length);
 
         if (linhas.length < 2) {
-            console.error("Nenhum dado encontrado no CSV.");
+            console.error("Nenhum dado encontrado.");
             return;
         }
 
+        const cabecalho = linhas[0];
         const corpo = linhas.slice(1);
 
-        // Índices das colunas
-        const idxCard = 0;    // A
-        const idxGrupo = 48;  // AW
-        const idxStatus = 51; // AZ
-        const idxProduto = 31;// AF
-        const idxDataIni = 11;// L
-        const idxDataFim = 12;// M
-        const idxSaldo = 21;  // V
+        // Descobre índices pelo nome
+        const idxCard = cabecalho.indexOf("Card");
+        const idxGrupo = cabecalho.indexOf("Grupo");
+        const idxStatus = cabecalho.indexOf("Status do Card");
+        const idxProduto = cabecalho.indexOf("Produto");
+        const idxDataIni = cabecalho.indexOf("Data Início");
+        const idxDataFim = cabecalho.indexOf("Data Fim");
+        const idxSaldo = cabecalho.indexOf("Saldo");
+
+        console.log("Índices detectados:", { idxCard, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
 
         const agrupado = {};
 
-        corpo.forEach((linha, i) => {
-            if (linha.length < 52) {
-                console.warn(`Linha ${i} tem apenas ${linha.length} colunas. Verifique índices.`);
-            }
-
+        corpo.forEach(linha => {
             const card = linha[idxCard];
             if (!card) return;
 
@@ -52,6 +48,7 @@ async function carregarTabela() {
             if (!isNaN(valor)) agrupado[card].Saldo += valor;
         });
 
+        // Simulação de Baixas
         for (let card in agrupado) {
             agrupado[card].Baixas = agrupado[card].Saldo * 0.1;
         }
