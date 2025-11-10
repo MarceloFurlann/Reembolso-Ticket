@@ -12,7 +12,7 @@ async function carregarDados() {
         const cabecalho = linhas[0];
         const corpo = linhas.slice(1);
 
-        // Preenche tabela 1 (exemplo)
+        // Preenche tabela
         const tabela = document.querySelector("#tabela1 tbody");
         tabela.innerHTML = "";
 
@@ -25,7 +25,7 @@ async function carregarDados() {
                 td.textContent = coluna;
                 tr.appendChild(td);
 
-                // Se a coluna for valor (ex: última coluna), soma
+                // Se a última coluna for valor, soma
                 if (index === linha.length - 1) {
                     const valor = parseFloat(coluna.replace(",", "."));
                     if (!isNaN(valor)) total += valor;
@@ -36,31 +36,12 @@ async function carregarDados() {
 
         // Atualiza total no cartão
         document.getElementById("total-geral").textContent = "R$ " + total.toLocaleString("pt-BR");
+
+        // Inicializa DataTables após carregar dados
+        $('#tabela1').DataTable();
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
     }
 }
 
 carregarDados();
-$(document).ready(function() {
-    // Inicializa DataTables para as 3 tabelas
-    $('#tabela1').DataTable();
-    $('#tabela2').DataTable();
-    $('#tabela3').DataTable();
-
-    // Calcula total geral
-    function calcularTotal() {
-        let total = 0;
-        $('table tbody tr').each(function() {
-            let valor = parseFloat($(this).find('td:last').text());
-            if (!isNaN(valor)) {
-                total += valor;
-            }
-        });
-        $('#total-geral').text('R$ ' + total.toLocaleString('pt-BR'));
-    }
-
-    calcularTotal();
-
-});
-
