@@ -1,49 +1,57 @@
-const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?output=csv";
+const urlBase = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=1131797479&single=true&output=csv";
+const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=359149770&single=true&output=csv";
 
 async function carregarTabela() {
     try {
-        const response = await fetch(urlCSV);
-        const data = await response.text();
-        const linhas = data.split("\n").map(l => l.split(","));
+        // Carrega Base
+        const baseResp = await fetch(urlBase);
+        const baseData = await baseResp.text();
+        const baseLinhas = baseData.split("\n").map(l => l.split(","));
+        const baseCabecalho = baseLinhas[0].map(h => h.trim());
+        const baseCorpo = baseLinhas.slice(1);
 
-        if (linhas.length < 2) {
-            console.error("Nenhum dado encontrado.");
-            return;
-        }
+        // Carrega Report
+        const reportResp = await fetch(urlReport);
+        const reportData = await reportResp.text();
+        const reportLinhas = reportData.split("\n").map(l => l.split(","));
+        const reportCabecalho = reportLinhas[0].map(h => h.trim());
+        const reportCorpo = reportLinhas.slice(1);
 
-        const cabecalho = linhas[0].map(h => h.trim());
-        const corpo = linhas.slice(1);
+        // Função para achar índice por nome aproximado
+        const findIndex = (cabecalho, termo) => cabecalho.findIndex(c => c.toLowerCase().includes(termo.toLowerCase()));
 
-        // Detecta índices pelo nome exato
-        const idxCard = cabecalho.indexOf("controleIC[CODIGO_CARD]");
-        const idxGrupo = cabecalho.indexOf("Grupo");
-        const idxStatus = cabecalho.indexOf("controleIC[STATUS_CARD]");
-        const idxProduto = cabecalho.indexOf("Produto");
-        const idxDataIni = cabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
-        const idxDataFim = cabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
-        const idxSaldo = cabecalho.indexOf("controleIC[SALDO_IC]");
+        // Índices Base
+        const idxCard = findIndex(baseCabecalho, "CODIGO_CARD");
+        const idxGrupo = findIndex(baseCabecalho, "Grupo");
+        const idxStatus = findIndex(baseCabecalho, "STATUS_CARD");
+        const idxProduto = findIndex(baseCabecalho, "Produto");
+        const idxDataIni = findIndex(baseCabecalho, "INICIO_VIGENCIA");
+        const idxDataFim = findIndex(baseCabecalho, "FIM_VIGENCIA");
+        const idxSaldo = findIndex(baseCabecalho, "SALDO_IC");
 
-        console.log("Índices detectados:", { idxCard, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
+        // Índices Report
+        const idxReportCard = findIndex(reportCabecalho, "COD IC");
+        const idxValorNF = findIndex(reportCabecalho, "Valor da NF");
+        const idxValorDesc = findIndex(reportCabecalho, "Valor Desconto");
 
-        if (idxCard === -1) {
-            console.error("Coluna 'controleIC[CODIGO_CARD]' não encontrada.");
-            return;
-        }
+        console.log("Índices Base:", { idxCard, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
+        console.log("Índices Report:", { idxReportCard, idxValorNF, idxValorDesc });
 
         const agrupado = {};
 
-        corpo.forEach(linha => {
+        // Processa Base
+        baseCorpo.forEach(linha => {
             const card = linha[idxCard];
             if (!card) return;
 
             if (!agrupado[card]) {
                 agrupado[card] = {
                     Card: card,
-                    Grupo: idxGrupo !== -1 ? linha[idxGrupo] : "",
-                    Status: idxStatus !== -1 ? linha[idxStatus] : "",
-                    Produto: idxProduto !== -1 ? linha[idxProduto] : "",
-                    DataInicio: idxDataIni !== -1 ? linha[idxDataIni] : "",
-                    DataFim: idxDataFim !== -1 ? linha[idxDataFim] : "",
+                    Grupo: linha[idxGrupo] || "",
+                    Status: linha[idxStatus] || "",
+                    Produto: linha[idxProduto] || "",
+                    DataInicio: linha[idxDataIni] || "",
+                    DataFim: linha[idxDataFim] || "",
                     Saldo: 0,
                     Baixas: 0
                 };
@@ -55,11 +63,16 @@ async function carregarTabela() {
             }
         });
 
-        // Simulação de Baixas (depois vamos integrar com Report)
-        for (let card in agrupado) {
-            agrupado[card].Baixas = agrupado[card].Saldo * 0.1;
-        }
+        // Calcula Baixas com Report (SOMASE)
+        reportCorpo.forEach(linha => {
+            const cardReport = linha[idxReportCard];
+            if (!cardReport || !agrupado[cardReport]) return;
 
+            const valorDesc = parseFloat((linha[idxValorDesc] || "0").replace(",", "."));
+            if (!isNaN(valorDesc)) agrupado[cardReport].Baixas += valorDesc;
+        });
+
+        // Monta tabela
         const tabela = document.querySelector("#tabela1 tbody");
         tabela.innerHTML = "";
 
