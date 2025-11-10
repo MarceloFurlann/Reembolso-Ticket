@@ -16,15 +16,15 @@ async function carregarTabela() {
         const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
-        // Índices fixos conforme posição
-        const idxCard = 32;      // Coluna AG
+        // Índices corrigidos conforme posição
+        const idxCard = 0;       // Coluna A
+        const idxDataIni = 11;   // Coluna L
+        const idxDataFim = 12;   // Coluna M
+        const idxSaldo = 21;     // Coluna V
         const idxGrupo = 48;     // Coluna AW
         const idxProduto = 49;   // Coluna AX
         const idxGN = 50;        // Coluna AY
         const idxStatus = 51;    // Coluna AZ
-        const idxDataIni = 11;   // Coluna L
-        const idxDataFim = 12;   // Coluna M
-        const idxSaldo = 21;     // Coluna V
 
         const idxReportCard = reportCabecalho.indexOf("COD IC");
         const idxValorDesc = reportCabecalho.indexOf("Valor Desconto");
