@@ -16,7 +16,7 @@ async function carregarTabela() {
         const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
-        // Índices corrigidos conforme posição
+        // Índices corretos
         const idxCard = 0;       // Coluna A
         const idxDataIni = 11;   // Coluna L
         const idxDataFim = 12;   // Coluna M
