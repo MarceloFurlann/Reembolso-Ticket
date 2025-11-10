@@ -1,24 +1,4 @@
-$(document).ready(function() {
-    // Inicializa DataTables para as 3 tabelas
-    $('#tabela1').DataTable();
-    $('#tabela2').DataTable();
-    $('#tabela3').DataTable();
-
-    // Calcula total geral
-    function calcularTotal() {
-        let total = 0;
-        $('table tbody tr').each(function() {
-            let valor = parseFloat($(this).find('td:last').text());
-            if (!isNaN(valor)) {
-                total += valor;
-            }
-        });
-        $('#total-geral').text('R$ ' + total.toLocaleString('pt-BR'));
-    }
-
-    calcularTotal();
-
-});const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?output=csv";
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?output=csv";
 
 async function carregarDados() {
     try {
@@ -62,3 +42,25 @@ async function carregarDados() {
 }
 
 carregarDados();
+$(document).ready(function() {
+    // Inicializa DataTables para as 3 tabelas
+    $('#tabela1').DataTable();
+    $('#tabela2').DataTable();
+    $('#tabela3').DataTable();
+
+    // Calcula total geral
+    function calcularTotal() {
+        let total = 0;
+        $('table tbody tr').each(function() {
+            let valor = parseFloat($(this).find('td:last').text());
+            if (!isNaN(valor)) {
+                total += valor;
+            }
+        });
+        $('#total-geral').text('R$ ' + total.toLocaleString('pt-BR'));
+    }
+
+    calcularTotal();
+
+});
+
