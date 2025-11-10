@@ -11,10 +11,10 @@ async function carregarTabela() {
             return;
         }
 
-        const cabecalho = linhas[0];
+        const cabecalho = linhas[0].map(h => h.trim());
         const corpo = linhas.slice(1);
 
-        // Descobre índices pelo nome
+        // Detecta índices pelo nome
         const idxCard = cabecalho.indexOf("Card");
         const idxGrupo = cabecalho.indexOf("Grupo");
         const idxStatus = cabecalho.indexOf("Status do Card");
@@ -25,6 +25,11 @@ async function carregarTabela() {
 
         console.log("Índices detectados:", { idxCard, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
 
+        if (idxCard === -1) {
+            console.error("Coluna 'Card' não encontrada. Verifique o cabeçalho da planilha.");
+            return;
+        }
+
         const agrupado = {};
 
         corpo.forEach(linha => {
@@ -34,18 +39,20 @@ async function carregarTabela() {
             if (!agrupado[card]) {
                 agrupado[card] = {
                     Card: card,
-                    Grupo: linha[idxGrupo] || "",
-                    Status: linha[idxStatus] || "",
-                    Produto: linha[idxProduto] || "",
-                    DataInicio: linha[idxDataIni] || "",
-                    DataFim: linha[idxDataFim] || "",
+                    Grupo: idxGrupo !== -1 ? linha[idxGrupo] : "",
+                    Status: idxStatus !== -1 ? linha[idxStatus] : "",
+                    Produto: idxProduto !== -1 ? linha[idxProduto] : "",
+                    DataInicio: idxDataIni !== -1 ? linha[idxDataIni] : "",
+                    DataFim: idxDataFim !== -1 ? linha[idxDataFim] : "",
                     Saldo: 0,
                     Baixas: 0
                 };
             }
 
-            const valor = parseFloat((linha[idxSaldo] || "0").replace(",", "."));
-            if (!isNaN(valor)) agrupado[card].Saldo += valor;
+            if (idxSaldo !== -1 && linha[idxSaldo]) {
+                const valor = parseFloat(linha[idxSaldo].replace(",", "."));
+                if (!isNaN(valor)) agrupado[card].Saldo += valor;
+            }
         });
 
         // Simulação de Baixas
