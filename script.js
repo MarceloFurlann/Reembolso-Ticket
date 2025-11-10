@@ -14,19 +14,19 @@ async function carregarTabela() {
         const cabecalho = linhas[0].map(h => h.trim());
         const corpo = linhas.slice(1);
 
-        // Detecta índices pelo nome
-        const idxCard = cabecalho.indexOf("Card");
+        // Detecta índices pelo nome exato
+        const idxCard = cabecalho.indexOf("controleIC[CODIGO_CARD]");
         const idxGrupo = cabecalho.indexOf("Grupo");
-        const idxStatus = cabecalho.indexOf("Status do Card");
+        const idxStatus = cabecalho.indexOf("controleIC[STATUS_CARD]");
         const idxProduto = cabecalho.indexOf("Produto");
-        const idxDataIni = cabecalho.indexOf("Data Início");
-        const idxDataFim = cabecalho.indexOf("Data Fim");
-        const idxSaldo = cabecalho.indexOf("Saldo");
+        const idxDataIni = cabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
+        const idxDataFim = cabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
+        const idxSaldo = cabecalho.indexOf("controleIC[SALDO_IC]");
 
         console.log("Índices detectados:", { idxCard, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
 
         if (idxCard === -1) {
-            console.error("Coluna 'Card' não encontrada. Verifique o cabeçalho da planilha.");
+            console.error("Coluna 'controleIC[CODIGO_CARD]' não encontrada.");
             return;
         }
 
@@ -55,7 +55,7 @@ async function carregarTabela() {
             }
         });
 
-        // Simulação de Baixas
+        // Simulação de Baixas (depois vamos integrar com Report)
         for (let card in agrupado) {
             agrupado[card].Baixas = agrupado[card].Saldo * 0.1;
         }
