@@ -4,12 +4,14 @@ async function carregarTabela() {
     try {
         const response = await fetch(urlCSV);
         const data = await response.text();
-        const linhas = data.split("\n").map(l => l.split(","));
-        
-        const cabecalho = linhas[0];
-        const corpo = linhas.slice(1);
+        console.log("Dados CSV carregados:", data.substring(0, 200)); // Log inicial
 
-        // Índices das colunas (ajuste conforme necessário)
+        const linhas = data.split("\n").map(l => l.split(","));
+        console.log("Linhas processadas:", linhas.length);
+
+        const corpo = linhas.slice(1); // Ignora cabeçalho
+
+        // Índices das colunas
         const idxCard = 0;    // Coluna A
         const idxGrupo = 48;  // Coluna AW
         const idxStatus = 51; // Coluna AZ
@@ -18,8 +20,8 @@ async function carregarTabela() {
         const idxDataFim = 12;// Coluna M
         const idxSaldo = 21;  // Coluna V
 
-        // Agrupar por Card
         const agrupado = {};
+
         corpo.forEach(linha => {
             const card = linha[idxCard];
             if (!card) return;
@@ -33,18 +35,17 @@ async function carregarTabela() {
                     DataInicio: linha[idxDataIni],
                     DataFim: linha[idxDataFim],
                     Saldo: 0,
-                    Baixas: 0 // Simulação
+                    Baixas: 0
                 };
             }
 
-            // Soma saldo
             const valor = parseFloat(linha[idxSaldo].replace(",", "."));
             if (!isNaN(valor)) agrupado[card].Saldo += valor;
         });
 
-        // Simulação de Baixas (pode ser substituído por lógica real)
+        // Simulação de Baixas
         for (let card in agrupado) {
-            agrupado[card].Baixas = agrupado[card].Saldo * 0.1; // Exemplo: 10% do saldo
+            agrupado[card].Baixas = agrupado[card].Saldo * 0.1;
         }
 
         // Monta tabela
@@ -52,9 +53,8 @@ async function carregarTabela() {
         tabela.innerHTML = "";
 
         Object.values(agrupado).forEach(item => {
-            const tr = document.createElement("tr");
             const saldoFinal = item.Saldo - item.Baixas;
-
+            const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${item.Card}</td>
                 <td>${item.Grupo}</td>
@@ -68,6 +68,8 @@ async function carregarTabela() {
             `;
             tabela.appendChild(tr);
         });
+
+        console.log("Tabela preenchida com", Object.keys(agrupado).length, "Cards");
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
