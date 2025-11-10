@@ -1,23 +1,22 @@
 const urlBase = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=1131797479&single=true&output=csv";
 const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=359149770&single=true&output=csv";
 
+let dadosAgrupados = [];
+
 async function carregarTabela() {
     try {
-        // Carrega Base
         const baseResp = await fetch(urlBase);
         const baseData = await baseResp.text();
         const baseLinhas = baseData.split("\n").map(l => l.split(","));
         const baseCabecalho = baseLinhas[0].map(h => h.trim());
         const baseCorpo = baseLinhas.slice(1);
 
-        // Carrega Report
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
         const reportLinhas = reportData.split("\n").map(l => l.split(","));
         const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
-        // Índices exatos
         const idxCard = baseCabecalho.indexOf("controleIC[CODIGO_CARD]");
         const idxGrupo = baseCabecalho.indexOf("Grupo");
         const idxStatus = baseCabecalho.indexOf("controleIC[STATUS_CARD]");
@@ -25,21 +24,13 @@ async function carregarTabela() {
         const idxDataIni = baseCabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
         const idxDataFim = baseCabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
         const idxSaldo = baseCabecalho.indexOf("controleIC[SALDO_IC]");
+        const idxGN = baseCabecalho.indexOf("GN");
 
         const idxReportCard = reportCabecalho.indexOf("COD IC");
         const idxValorDesc = reportCabecalho.indexOf("Valor Desconto");
 
-        console.log("Índices Base:", { idxCard, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
-        console.log("Índices Report:", { idxReportCard, idxValorDesc });
-
-        if (idxCard === -1 || idxSaldo === -1) {
-            console.error("Colunas essenciais não encontradas. Verifique o cabeçalho.");
-            return;
-        }
-
         const agrupado = {};
 
-        // Processa Base
         baseCorpo.forEach(linha => {
             const card = linha[idxCard];
             if (!card) return;
@@ -47,6 +38,7 @@ async function carregarTabela() {
             if (!agrupado[card]) {
                 agrupado[card] = {
                     Card: card,
+                    GN: linha[idxGN] || "",
                     Grupo: linha[idxGrupo] || "",
                     Status: linha[idxStatus] || "",
                     Produto: linha[idxProduto] || "",
@@ -63,7 +55,6 @@ async function carregarTabela() {
             }
         });
 
-        // Calcula Baixas com Report
         reportCorpo.forEach(linha => {
             const cardReport = linha[idxReportCard];
             if (!cardReport || !agrupado[cardReport]) return;
@@ -72,32 +63,81 @@ async function carregarTabela() {
             if (!isNaN(valorDesc)) agrupado[cardReport].Baixas += valorDesc;
         });
 
-        // Monta tabela
-        const tabela = document.querySelector("#tabela1 tbody");
-        tabela.innerHTML = "";
-
-        Object.values(agrupado).forEach(item => {
-            const saldoFinal = item.Saldo - item.Baixas;
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${item.Card}</td>
-                <td>${item.Grupo}</td>
-                <td>${item.Status}</td>
-                <td>${item.Produto}</td>
-                <td>${item.DataInicio}</td>
-                <td>${item.DataFim}</td>
-                <td>R$ ${item.Saldo.toLocaleString("pt-BR")}</td>
-                <td>R$ ${item.Baixas.toLocaleString("pt-BR")}</td>
-                <td>R$ ${saldoFinal.toLocaleString("pt-BR")}</td>
-            `;
-            tabela.appendChild(tr);
-        });
-
-        console.log("Tabela preenchida com", Object.keys(agrupado).length, "Cards");
+        dadosAgrupados = Object.values(agrupado);
+        preencherFiltros(dadosAgrupados);
+        montarTabela(dadosAgrupados);
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
     }
+}
+
+function montarTabela(dados) {
+    const tabela = document.querySelector("#tabela1 tbody");
+    tabela.innerHTML = "";
+
+    dados.forEach(item => {
+        const saldoFinal = item.Saldo - item.Baixas;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.Card}</td>
+            <td>${item.GN}</td>
+            <td>${item.Grupo}</td>
+            <td>${item.Status}</td>
+            <td>${item.Produto}</td>
+            <td>${item.DataInicio}</td>
+            <td>${item.DataFim}</td>
+            <td>R$ ${item.Saldo.toLocaleString("pt-BR")}</td>
+            <td>R$ ${item.Baixas.toLocaleString("pt-BR")}</td>
+            <td>R$ ${saldoFinal.toLocaleString("pt-BR")}</td>
+        `;
+        tabela.appendChild(tr);
+    });
+}
+
+function preencherFiltros(dados) {
+    const cards = [...new Set(dados.map(d => d.Card))];
+    const gns = [...new Set(dados.map(d => d.GN))];
+    const grupos = [...new Set(dados.map(d => d.Grupo))];
+
+    preencherSelect("filtroCard", cards);
+    preencherSelect("filtroGN", gns);
+    preencherSelect("filtroGrupo", grupos);
+}
+
+function preencherSelect(id, valores) {
+    const select = document.getElementById(id);
+    select.innerHTML = "";
+    valores.forEach(v => {
+        const option = document.createElement("option");
+        option.value = v;
+        option.textContent = v;
+        select.appendChild(option);
+    });
+
+    new Choices(select, {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: `Filtrar por ${id.replace("filtro", "")}`
+    });
+
+    select.addEventListener("change", aplicarFiltros);
+}
+
+function aplicarFiltros() {
+    const filtroCard = Array.from(document.getElementById("filtroCard").selectedOptions).map(o => o.value);
+    const filtroGN = Array.from(document.getElementById("filtroGN").selectedOptions).map(o => o.value);
+    const filtroGrupo = Array.from(document.getElementById("filtroGrupo").selectedOptions).map(o => o.value);
+
+    const filtrado = dadosAgrupados.filter(item => {
+        const matchCard = filtroCard.length === 0 || filtroCard.includes(item.Card);
+        const matchGN = filtroGN.length === 0 || filtroGN.includes(item.GN);
+        const matchGrupo = filtroGrupo.length === 0 || filtroGrupo.includes(item.Grupo);
+        return matchCard && matchGN && matchGrupo;
+    });
+
+    montarTabela(filtrado);
 }
 
 carregarTabela();
