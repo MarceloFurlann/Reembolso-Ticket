@@ -17,25 +17,25 @@ async function carregarTabela() {
         const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
-        // Função para achar índice por nome aproximado
-        const findIndex = (cabecalho, termo) => cabecalho.findIndex(c => c.toLowerCase().includes(termo.toLowerCase()));
+        // Índices exatos
+        const idxCard = baseCabecalho.indexOf("controleIC[CODIGO_CARD]");
+        const idxGrupo = baseCabecalho.indexOf("Grupo");
+        const idxStatus = baseCabecalho.indexOf("controleIC[STATUS_CARD]");
+        const idxProduto = baseCabecalho.indexOf("Produto");
+        const idxDataIni = baseCabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
+        const idxDataFim = baseCabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
+        const idxSaldo = baseCabecalho.indexOf("controleIC[SALDO_IC]");
 
-        // Índices Base
-        const idxCard = findIndex(baseCabecalho, "CODIGO_CARD");
-        const idxGrupo = findIndex(baseCabecalho, "Grupo");
-        const idxStatus = findIndex(baseCabecalho, "STATUS_CARD");
-        const idxProduto = findIndex(baseCabecalho, "Produto");
-        const idxDataIni = findIndex(baseCabecalho, "INICIO_VIGENCIA");
-        const idxDataFim = findIndex(baseCabecalho, "FIM_VIGENCIA");
-        const idxSaldo = findIndex(baseCabecalho, "SALDO_IC");
-
-        // Índices Report
-        const idxReportCard = findIndex(reportCabecalho, "COD IC");
-        const idxValorNF = findIndex(reportCabecalho, "Valor da NF");
-        const idxValorDesc = findIndex(reportCabecalho, "Valor Desconto");
+        const idxReportCard = reportCabecalho.indexOf("COD IC");
+        const idxValorDesc = reportCabecalho.indexOf("Valor Desconto");
 
         console.log("Índices Base:", { idxCard, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
-        console.log("Índices Report:", { idxReportCard, idxValorNF, idxValorDesc });
+        console.log("Índices Report:", { idxReportCard, idxValorDesc });
+
+        if (idxCard === -1 || idxSaldo === -1) {
+            console.error("Colunas essenciais não encontradas. Verifique o cabeçalho.");
+            return;
+        }
 
         const agrupado = {};
 
@@ -57,13 +57,13 @@ async function carregarTabela() {
                 };
             }
 
-            if (idxSaldo !== -1 && linha[idxSaldo]) {
+            if (linha[idxSaldo]) {
                 const valor = parseFloat(linha[idxSaldo].replace(",", "."));
                 if (!isNaN(valor)) agrupado[card].Saldo += valor;
             }
         });
 
-        // Calcula Baixas com Report (SOMASE)
+        // Calcula Baixas com Report
         reportCorpo.forEach(linha => {
             const cardReport = linha[idxReportCard];
             if (!cardReport || !agrupado[cardReport]) return;
