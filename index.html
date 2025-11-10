@@ -4,15 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saldo de Reembolso</title>
+
+    <!-- Choices.js para filtros interativos -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h2 { margin-bottom: 15px; }
-        .filtros { margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
-        label { font-weight: bold; margin-right: 5px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            margin-bottom: 15px;
+        }
+        .filtros {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .filtros label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
     </style>
 </head>
 <body>
@@ -39,7 +63,7 @@
         <thead>
             <tr>
                 <th>Card</th>
-                <th>GN</th>
+                <th>GN</th> <!-- ✅ Coluna GN adicionada -->
                 <th>Grupo</th>
                 <th>Status do Card</th>
                 <th>Produto</th>
