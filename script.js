@@ -18,17 +18,17 @@ async function carregarTabela() {
         const reportCorpo = reportLinhas.slice(1);
 
         // Buscar índices pelo nome da coluna
-        const idxCard = baseCabecalho.indexOf("controleIC[CODIGO_CARD]");
-        const idxDataIni = baseCabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
-        const idxDataFim = baseCabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
-        const idxSaldo = baseCabecalho.indexOf("controleIC[SALDO_IC]");
-        const idxGrupo = baseCabecalho.indexOf("Grupo");
-        const idxProduto = baseCabecalho.indexOf("Produto");
-        const idxGN = baseCabecalho.indexOf("GN");
-        const idxStatus = baseCabecalho.indexOf("Status");
+        const idxCard     = baseCabecalho.indexOf("controleIC[CODIGO_CARD]");
+        const idxDataIni  = baseCabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
+        const idxDataFim  = baseCabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
+        const idxSaldo    = baseCabecalho.indexOf("controleIC[SALDO_IC]");
+        const idxGrupo    = baseCabecalho.indexOf("Grupo");
+        const idxProduto  = baseCabecalho.indexOf("controleIC[PRODUTO]");
+        const idxGN       = baseCabecalho.indexOf("GN");
+        const idxStatus   = baseCabecalho.indexOf("controleIC[STATUS_CARD]");
 
         const idxReportCard = reportCabecalho.indexOf("COD IC");
-        const idxValorDesc = reportCabecalho.indexOf("Valor Desconto");
+        const idxValorDesc  = reportCabecalho.indexOf("Valor Desconto");
 
         const agrupado = {};
 
