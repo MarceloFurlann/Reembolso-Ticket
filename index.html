@@ -4,28 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saldo de Reembolso</title>
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Choices.js para filtros -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { margin-bottom: 15px; }
+        .filtros { margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
+        label { font-weight: bold; margin-right: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
 </head>
 <body>
     <h2>Saldo de Reembolso</h2>
 
     <!-- Filtros -->
-    <div style="margin-bottom: 20px;">
-        <label for="filtroCard">Card:</label>
-        <select id="filtroCard" multiple></select>
-
-        <label for="filtroGN">GN:</label>
-        <select id="filtroGN" multiple></select>
-
-        <label for="filtroGrupo">Grupo:</label>
-        <select id="filtroGrupo" multiple></select>
+    <div class="filtros">
+        <div>
+            <label for="filtroCard">Card:</label>
+            <select id="filtroCard" multiple></select>
+        </div>
+        <div>
+            <label for="filtroGN">GN:</label>
+            <select id="filtroGN" multiple></select>
+        </div>
+        <div>
+            <label for="filtroGrupo">Grupo:</label>
+            <select id="filtroGrupo" multiple></select>
+        </div>
     </div>
 
     <!-- Tabela -->
-    <table id="tabela1" class="display">
+    <table id="tabela1">
         <thead>
             <tr>
                 <th>Card</th>
