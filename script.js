@@ -8,6 +8,7 @@ async function carregarTabela() {
         const baseResp = await fetch(urlBase);
         const baseData = await baseResp.text();
         const baseLinhas = baseData.split("\n").map(l => l.split(","));
+        const baseCabecalho = baseLinhas[0].map(h => h.trim());
         const baseCorpo = baseLinhas.slice(1);
 
         const reportResp = await fetch(urlReport);
@@ -16,15 +17,15 @@ async function carregarTabela() {
         const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
-        // Índices corretos
-        const idxCard = 0;       // Coluna A
-        const idxDataIni = 11;   // Coluna L
-        const idxDataFim = 12;   // Coluna M
-        const idxSaldo = 21;     // Coluna V
-        const idxGrupo = 48;     // Coluna AW
-        const idxProduto = 49;   // Coluna AX
-        const idxGN = 50;        // Coluna AY
-        const idxStatus = 51;    // Coluna AZ
+        // Buscar índices pelo nome da coluna
+        const idxCard = baseCabecalho.indexOf("controleIC[CODIGO_CARD]");
+        const idxDataIni = baseCabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
+        const idxDataFim = baseCabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
+        const idxSaldo = baseCabecalho.indexOf("controleIC[SALDO_IC]");
+        const idxGrupo = baseCabecalho.indexOf("Grupo");
+        const idxProduto = baseCabecalho.indexOf("Produto");
+        const idxGN = baseCabecalho.indexOf("GN");
+        const idxStatus = baseCabecalho.indexOf("Status");
 
         const idxReportCard = reportCabecalho.indexOf("COD IC");
         const idxValorDesc = reportCabecalho.indexOf("Valor Desconto");
