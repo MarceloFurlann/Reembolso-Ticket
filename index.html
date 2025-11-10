@@ -5,13 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saldo de Reembolso</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- Choices.js para filtros interativos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 </head>
 <body>
     <h2>Saldo de Reembolso</h2>
+
+    <!-- Filtros -->
+    <div style="margin-bottom: 20px;">
+        <label for="filtroCard">Filtrar por Card:</label>
+        <select id="filtroCard" multiple></select>
+
+        <label for="filtroGN">Filtrar por GN:</label>
+        <select id="filtroGN" multiple></select>
+
+        <label for="filtroGrupo">Filtrar por Grupo:</label>
+        <select id="filtroGrupo" multiple></select>
+    </div>
+
+    <!-- Tabela -->
     <table id="tabela1" class="display">
         <thead>
             <tr>
                 <th>Card</th>
+                <th>GN</th>
                 <th>Grupo</th>
                 <th>Status do Card</th>
                 <th>Produto</th>
@@ -26,6 +44,7 @@
     </table>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
