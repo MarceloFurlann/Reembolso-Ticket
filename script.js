@@ -17,14 +17,15 @@ async function carregarTabela() {
         const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
+        // Índices corrigidos
         const idxCard = baseCabecalho.indexOf("controleIC[CODIGO_CARD]");
         const idxGrupo = baseCabecalho.indexOf("Grupo");
-        const idxStatus = baseCabecalho.indexOf("controleIC[STATUS_CARD]");
         const idxProduto = baseCabecalho.indexOf("Produto");
+        const idxGN = baseCabecalho.indexOf("GN");
+        const idxStatus = baseCabecalho.indexOf("Status");
         const idxDataIni = baseCabecalho.indexOf("controleIC[INICIO_VIGENCIA_IC]");
         const idxDataFim = baseCabecalho.indexOf("controleIC[FIM_VIGENCIA_IC]");
         const idxSaldo = baseCabecalho.indexOf("controleIC[SALDO_IC]");
-        const idxGN = baseCabecalho.indexOf("GN");
 
         const idxReportCard = reportCabecalho.indexOf("COD IC");
         const idxValorDesc = reportCabecalho.indexOf("Valor Desconto");
