@@ -1,22 +1,26 @@
-const urlBase = "...";
-const urlReport = "...";
+const urlBase = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=1131797479&single=true&output=csv";
+const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=359149770&single=true&output=csv";
 
 let dadosAgrupados = [];
 
+function normalizar(texto) {
+    return texto.replace(/\[|\]/g, "").trim().toLowerCase();
+}
+
 const camposBase = {
-    Card: "controleIC[CODIGO_CARD]",
-    GN: "GN",
-    Grupo: "controleIC[GRUPO_CONSOLIDADOR]",
-    Status: "controleIC[STATUS_CARD]",
-    Produto: "controleIC[PRODUTO]",
-    DataInicio: "controleIC[INICIO_VIGENCIA_IC]",
-    DataFim: "controleIC[FIM_VIGENCIA_IC]",
-    Saldo: "controleIC[SALDO_IC]"
+    Card: "controleiccodigo_card",
+    GN: "gn",
+    Grupo: "grupo",
+    Status: "controleicstatus_card",
+    Produto: "controleicproduto",
+    DataInicio: "controleicinicio_vigencia_ic",
+    DataFim: "controleicfim_vigencia_ic",
+    Saldo: "controleicsaldo_ic"
 };
 
 const camposReport = {
-    Card: "COD IC",
-    ValorDesc: "Valor Desconto"
+    Card: "cod ic",
+    ValorDesc: "valor desconto"
 };
 
 async function carregarTabela() {
@@ -25,18 +29,18 @@ async function carregarTabela() {
         const baseData = await baseResp.text();
         const sepBase = baseData.includes(";") ? ";" : ",";
         const baseLinhas = baseData.split("\n").map(l => l.split(sepBase));
-        const baseCabecalho = baseLinhas[0].map(h => h.trim());
+        const baseCabecalho = baseLinhas[0].map(h => normalizar(h));
         const baseCorpo = baseLinhas.slice(1);
 
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
         const sepReport = reportData.includes(";") ? ";" : ",";
         const reportLinhas = reportData.split("\n").map(l => l.split(sepReport));
-        const reportCabecalho = reportLinhas[0].map(h => h.trim());
+        const reportCabecalho = reportLinhas[0].map(h => normalizar(h));
         const reportCorpo = reportLinhas.slice(1);
 
-        console.log("Cabeçalho Base:", baseCabecalho);
-        console.log("Cabeçalho Report:", reportCabecalho);
+        console.log("Cabeçalho Base Normalizado:", baseCabecalho);
+        console.log("Cabeçalho Report Normalizado:", reportCabecalho);
 
         const idxBase = {};
         for (let key in camposBase) {
