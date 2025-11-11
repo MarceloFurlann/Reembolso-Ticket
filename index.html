@@ -9,38 +9,64 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+        @font-face {
+            font-family: 'Century Gothic';
+            src: local('Century Gothic'), url('https://fonts.cdnfonts.com/s/14452/CenturyGothic.woff') format('woff');
         }
+
+        body {
+            font-family: 'Century Gothic', Arial, sans-serif;
+            margin: 20px;
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 60px;
+        }
+
         h2 {
             margin-bottom: 15px;
         }
+
         .filtros {
             margin-bottom: 20px;
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
+
         .filtros label {
             font-weight: bold;
             margin-right: 5px;
         }
+
         table {
             border-collapse: collapse;
+            width: 100%;
         }
+
         th, td {
             border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f4f4f4;
         }
     </style>
 </head>
 <body>
-    <h2>Saldo de Reembolso</h2>
+    <header>
+        <h2>Saldo de Reembolso</h2>
+        <img class="logo" src="https://cdn.cookielaw.org/logos/3eee82c0-9eb6-4614-b723-8d597fdcce8d/01990669-53ca-7e07-b027-a305e1e7b1f6/e7e9a2f5-d961-403e-a109-033228694c0e/Ticket-Edenred-Logo-Color-RGB111_(2).png" alt="Logo Edenred">
+    </header>
 
     <!-- Filtros -->
     <div class="filtros">
@@ -63,7 +89,7 @@
         <thead>
             <tr>
                 <th>Card</th>
-                <th>GN</th> <!-- ✅ Coluna GN adicionada -->
+                <th>GN</th>
                 <th>Grupo</th>
                 <th>Status do Card</th>
                 <th>Produto</th>
