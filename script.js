@@ -3,18 +3,16 @@ const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnaz
 
 let dadosAgrupados = [];
 
-// Função para normalizar cabeçalho (remove colchetes e espaços extras)
 function normalizar(texto) {
     return texto.replace(/\[|\]/g, "").trim().toLowerCase();
 }
 
-// Mapeamento sem colchetes
 const camposBase = {
     Card: "controleIC CODIGO_CARD",
     GN: "GN",
     Grupo: "Grupo",
-    Status: "Status",
-    Produto: "Produto",
+    Status: "controleIC STATUS_CARD", // ✅ Corrigido
+    Produto: "controleIC PRODUTO",    // ✅ Corrigido
     DataInicio: "controleIC INICIO_VIGENCIA_IC",
     DataFim: "controleIC FIM_VIGENCIA_IC",
     Saldo: "controleIC SALDO_IC"
