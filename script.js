@@ -45,14 +45,15 @@ async function carregarTabela() {
         const idxBase = {};
         for (let key in camposBase) {
             idxBase[key] = baseCabecalho.indexOf(camposBase[key]);
-            if (idxBase[key] === -1) console.error(`❌ Coluna '${camposBase[key]}' não encontrada no CSV base!`);
         }
 
         const idxReport = {};
         for (let key in camposReport) {
             idxReport[key] = reportCabecalho.indexOf(camposReport[key]);
-            if (idxReport[key] === -1) console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
         }
+
+        console.log("Índices Base:", idxBase);
+        console.log("Índices Report:", idxReport);
 
         const agrupado = {};
         baseCorpo.forEach(linha => {
