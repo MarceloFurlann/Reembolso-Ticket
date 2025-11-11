@@ -1,23 +1,17 @@
-const urlBase = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=1131797479&single=true&output=csv";
-const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=359149770&single=true&output=csv";
+const urlBase = "...";
+const urlReport = "...";
 
 let dadosAgrupados = [];
 
-// Normaliza cabeçalho (remove colchetes e espaços)
-function normalizar(texto) {
-    return texto.replace(/\[|\]/g, "").trim().toLowerCase();
-}
-
-// Mapeamento correto
 const camposBase = {
-    Card: "controleIC CODIGO_CARD",
+    Card: "controleIC[CODIGO_CARD]",
     GN: "GN",
-    Grupo: "controleIC GRUPO_CONSOLIDADOR",
-    Status: "controleIC STATUS_CARD",
-    Produto: "controleIC PRODUTO",
-    DataInicio: "controleIC INICIO_VIGENCIA_IC",
-    DataFim: "controleIC FIM_VIGENCIA_IC",
-    Saldo: "controleIC SALDO_IC"
+    Grupo: "controleIC[GRUPO_CONSOLIDADOR]",
+    Status: "controleIC[STATUS_CARD]",
+    Produto: "controleIC[PRODUTO]",
+    DataInicio: "controleIC[INICIO_VIGENCIA_IC]",
+    DataFim: "controleIC[FIM_VIGENCIA_IC]",
+    Saldo: "controleIC[SALDO_IC]"
 };
 
 const camposReport = {
@@ -31,33 +25,31 @@ async function carregarTabela() {
         const baseData = await baseResp.text();
         const sepBase = baseData.includes(";") ? ";" : ",";
         const baseLinhas = baseData.split("\n").map(l => l.split(sepBase));
-        const baseCabecalho = baseLinhas[0].map(h => normalizar(h));
+        const baseCabecalho = baseLinhas[0].map(h => h.trim());
         const baseCorpo = baseLinhas.slice(1);
 
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
         const sepReport = reportData.includes(";") ? ";" : ",";
         const reportLinhas = reportData.split("\n").map(l => l.split(sepReport));
-        const reportCabecalho = reportLinhas[0].map(h => normalizar(h));
+        const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
-        console.log("Cabeçalho Base Normalizado:", baseCabecalho);
-        console.log("Cabeçalho Report Normalizado:", reportCabecalho);
+        console.log("Cabeçalho Base:", baseCabecalho);
+        console.log("Cabeçalho Report:", reportCabecalho);
 
-        // Índices
         const idxBase = {};
         for (let key in camposBase) {
-            idxBase[key] = baseCabecalho.indexOf(normalizar(camposBase[key]));
+            idxBase[key] = baseCabecalho.indexOf(camposBase[key]);
             if (idxBase[key] === -1) console.error(`❌ Coluna '${camposBase[key]}' não encontrada no CSV base!`);
         }
 
         const idxReport = {};
         for (let key in camposReport) {
-            idxReport[key] = reportCabecalho.indexOf(normalizar(camposReport[key]));
+            idxReport[key] = reportCabecalho.indexOf(camposReport[key]);
             if (idxReport[key] === -1) console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
         }
 
-        // Agrupamento
         const agrupado = {};
         baseCorpo.forEach(linha => {
             const card = linha[idxBase.Card];
@@ -83,7 +75,6 @@ async function carregarTabela() {
             }
         });
 
-        // Baixas do Report
         reportCorpo.forEach(linha => {
             const cardReport = linha[idxReport.Card];
             if (!cardReport || !agrupado[cardReport]) return;
@@ -102,75 +93,3 @@ async function carregarTabela() {
         console.error("Erro ao carregar dados:", error);
     }
 }
-
-function montarTabela(dados) {
-    const tabela = document.querySelector("#tabela1 tbody");
-    tabela.innerHTML = "";
-
-    dados.forEach(item => {
-        const saldoFinal = item.Saldo - item.Baixas;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${item.Card}</td>
-            <td>${item.GN}</td>
-            <td>${item.Grupo}</td>
-            <td>${item.Status}</td>
-            <td>${item.Produto}</td>
-            <td>${item.DataInicio}</td>
-            <td>${item.DataFim}</td>
-            <td>R$ ${item.Saldo.toLocaleString("pt-BR")}</td>
-            <td>R$ ${item.Baixas.toLocaleString("pt-BR")}</td>
-            <td>R$ ${saldoFinal.toLocaleString("pt-BR")}</td>
-        `;
-        tabela.appendChild(tr);
-    });
-}
-
-function preencherFiltros(dados) {
-    const cards = [...new Set(dados.map(d => d.Card))];
-    const gns = [...new Set(dados.map(d => d.GN))];
-    const grupos = [...new Set(dados.map(d => d.Grupo))];
-
-    preencherSelect("filtroCard", cards);
-    preencherSelect("filtroGN", gns);
-    preencherSelect("filtroGrupo", grupos);
-}
-
-function preencherSelect(id, valores) {
-    const select = document.getElementById(id);
-    select.innerHTML = "";
-    valores.forEach(v => {
-        if (v) {
-            const option = document.createElement("option");
-            option.value = v;
-            option.textContent = v;
-            select.appendChild(option);
-        }
-    });
-
-    new Choices(select, {
-        removeItemButton: true,
-        searchEnabled: true,
-        placeholder: true,
-        placeholderValue: `Filtrar por ${id.replace("filtro", "")}`
-    });
-
-    select.addEventListener("change", aplicarFiltros);
-}
-
-function aplicarFiltros() {
-    const filtroCard = Array.from(document.getElementById("filtroCard").selectedOptions).map(o => o.value);
-    const filtroGN = Array.from(document.getElementById("filtroGN").selectedOptions).map(o => o.value);
-    const filtroGrupo = Array.from(document.getElementById("filtroGrupo").selectedOptions).map(o => o.value);
-
-    const filtrado = dadosAgrupados.filter(item => {
-        const matchCard = filtroCard.length === 0 || filtroCard.includes(item.Card);
-        const matchGN = filtroGN.length === 0 || filtroGN.includes(item.GN);
-        const matchGrupo = filtroGrupo.length === 0 || filtroGrupo.includes(item.Grupo);
-        return matchCard && matchGN && matchGrupo;
-    });
-
-    montarTabela(filtrado);
-}
-
-carregarTabela();
