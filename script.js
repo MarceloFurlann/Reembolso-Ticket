@@ -1,98 +1,89 @@
+<script>
 const urlBase = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=1131797479&single=true&output=csv";
 const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=359149770&single=true&output=csv";
 
 let dadosAgrupados = [];
 
-// Função para normalizar texto (remove acentos e espaços extras)
-function normalizar(texto) {
-    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-}
+const camposBase = {
+    Card: "controleIC[CODIGO_CARD]",
+    GN: "GN",
+    Grupo: "Grupo",
+    Status: "Status",
+    Produto: "Produto",
+    DataInicio: "controleIC[INICIO_VIGENCIA_IC]",
+    DataFim: "controleIC[FIM_VIGENCIA_IC]",
+    Saldo: "controleIC[SALDO_IC]"
+};
+
+const camposReport = {
+    Card: "COD IC",
+    ValorDesc: "Valor Desconto"
+};
 
 async function carregarTabela() {
     try {
-        // Buscar CSV Base
+        // Carregar Base
         const baseResp = await fetch(urlBase);
         const baseData = await baseResp.text();
-        console.log("Base CSV:", baseData);
+        const sepBase = baseData.includes(";") ? ";" : ",";
+        const baseLinhas = baseData.split("\n").map(l => l.split(sepBase));
+        const baseCabecalho = baseLinhas[0].map(h => h.trim());
+        const baseCorpo = baseLinhas.slice(1);
 
-        // Buscar CSV Report
+        // Carregar Report
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
-        console.log("Report CSV:", reportData);
-
-        // Detecta separador
-        const separador = baseData.includes(";") ? ";" : ",";
-        const baseLinhas = baseData.split("\n").map(l => l.split(separador));
-        const reportLinhas = reportData.split("\n").map(l => l.split(separador));
-
-        // Normaliza cabeçalhos
-        const baseCabecalho = baseLinhas[0].map(h => normalizar(h));
-        const reportCabecalho = reportLinhas[0].map(h => normalizar(h));
-
-        const baseCorpo = baseLinhas.slice(1);
+        const sepReport = reportData.includes(";") ? ";" : ",";
+        const reportLinhas = reportData.split("\n").map(l => l.split(sepReport));
+        const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
-        console.log("Cabeçalho Base:", baseCabecalho);
-        console.log("Cabeçalho Report:", reportCabecalho);
-
-        // Índices (sem acento)
-        const idxCard    = baseCabecalho.indexOf("Card");
-        const idxGN      = baseCabecalho.indexOf("GN");
-        const idxGrupo   = baseCabecalho.indexOf("Grupo");
-        const idxStatus  = baseCabecalho.indexOf("Status");
-        const idxProduto = baseCabecalho.indexOf("Produto");
-        const idxDataIni = baseCabecalho.indexOf("Data Inicio");
-        const idxDataFim = baseCabecalho.indexOf("Data Fim");
-        const idxSaldo   = baseCabecalho.indexOf("Saldo");
-
-        const idxReportCard = reportCabecalho.indexOf("COD IC");
-        const idxValorDesc  = reportCabecalho.indexOf("Valor Desconto");
-
-        console.log("Índices Base:", { idxCard, idxGN, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
-        console.log("Índices Report:", { idxReportCard, idxValorDesc });
-
-        // Validação
-        if (idxCard === -1) {
-            console.error("❌ Coluna 'Card' não encontrada no CSV base!");
-            return;
-        }
-        if (idxReportCard === -1) {
-            console.error("❌ Coluna 'COD IC' não encontrada no CSV report!");
-            return;
+        // Índices Base
+        const idxBase = {};
+        for (let key in camposBase) {
+            idxBase[key] = baseCabecalho.indexOf(camposBase[key]);
+            if (idxBase[key] === -1) console.warn(`Coluna não encontrada na Base: ${camposBase[key]}`);
         }
 
-        // Agrupamento
+        // Índices Report
+        const idxReport = {};
+        for (let key in camposReport) {
+            idxReport[key] = reportCabecalho.indexOf(camposReport[key]);
+            if (idxReport[key] === -1) console.warn(`Coluna não encontrada no Report: ${camposReport[key]}`);
+        }
+
+        // Agrupar dados da Base
         const agrupado = {};
-
         baseCorpo.forEach(linha => {
-            const card = linha[idxCard];
+            const card = linha[idxBase.Card];
             if (!card) return;
 
             if (!agrupado[card]) {
                 agrupado[card] = {
                     Card: card,
-                    GN: linha[idxGN] || "",
-                    Grupo: linha[idxGrupo] || "",
-                    Status: linha[idxStatus] || "",
-                    Produto: linha[idxProduto] || "",
-                    DataInicio: linha[idxDataIni] || "",
-                    DataFim: linha[idxDataFim] || "",
+                    GN: linha[idxBase.GN] || "",
+                    Grupo: linha[idxBase.Grupo] || "",
+                    Status: linha[idxBase.Status] || "",
+                    Produto: linha[idxBase.Produto] || "",
+                    DataInicio: linha[idxBase.DataInicio] || "",
+                    DataFim: linha[idxBase.DataFim] || "",
                     Saldo: 0,
                     Baixas: 0
                 };
             }
 
-            if (linha[idxSaldo]) {
-                const valor = parseFloat(linha[idxSaldo].replace(",", "."));
+            if (linha[idxBase.Saldo]) {
+                const valor = parseFloat(linha[idxBase.Saldo].replace(",", "."));
                 if (!isNaN(valor)) agrupado[card].Saldo += valor;
             }
         });
 
+        // Somar Baixas do Report
         reportCorpo.forEach(linha => {
-            const cardReport = linha[idxReportCard];
+            const cardReport = linha[idxReport.Card];
             if (!cardReport || !agrupado[cardReport]) return;
 
-            const valorDesc = parseFloat((linha[idxValorDesc] || "0").replace(",", "."));
+            const valorDesc = parseFloat((linha[idxReport.ValorDesc] || "0").replace(",", "."));
             if (!isNaN(valorDesc)) agrupado[cardReport].Baixas += valorDesc;
         });
 
@@ -178,3 +169,4 @@ function aplicarFiltros() {
 }
 
 carregarTabela();
+</script>
