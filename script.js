@@ -3,7 +3,6 @@ const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnaz
 
 let dadosAgrupados = [];
 
-// Mapeamento real das colunas
 const camposBase = {
     Card: "controleIC[CODIGO_CARD]",
     GN: "GN",
@@ -22,7 +21,6 @@ const camposReport = {
 
 async function carregarTabela() {
     try {
-        // Buscar Base
         const baseResp = await fetch(urlBase);
         const baseData = await baseResp.text();
         const sepBase = baseData.includes(";") ? ";" : ",";
@@ -30,7 +28,6 @@ async function carregarTabela() {
         const baseCabecalho = baseLinhas[0].map(h => h.trim());
         const baseCorpo = baseLinhas.slice(1);
 
-        // Buscar Report
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
         const sepReport = reportData.includes(";") ? ";" : ",";
@@ -41,25 +38,18 @@ async function carregarTabela() {
         console.log("Cabeçalho Base:", baseCabecalho);
         console.log("Cabeçalho Report:", reportCabecalho);
 
-        // Índices Base
         const idxBase = {};
         for (let key in camposBase) {
             idxBase[key] = baseCabecalho.indexOf(camposBase[key]);
-            if (idxBase[key] === -1) {
-                console.error(`❌ Coluna '${camposBase[key]}' não encontrada no CSV base!`);
-            }
+            if (idxBase[key] === -1) console.error(`❌ Coluna '${camposBase[key]}' não encontrada no CSV base!`);
         }
 
-        // Índices Report
         const idxReport = {};
         for (let key in camposReport) {
             idxReport[key] = reportCabecalho.indexOf(camposReport[key]);
-            if (idxReport[key] === -1) {
-                console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
-            }
+            if (idxReport[key] === -1) console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
         }
 
-        // Agrupar dados da Base
         const agrupado = {};
         baseCorpo.forEach(linha => {
             const card = linha[idxBase.Card];
@@ -85,7 +75,6 @@ async function carregarTabela() {
             }
         });
 
-        // Somar Baixas do Report
         reportCorpo.forEach(linha => {
             const cardReport = linha[idxReport.Card];
             if (!cardReport || !agrupado[cardReport]) return;
