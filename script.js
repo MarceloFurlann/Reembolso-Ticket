@@ -97,3 +97,75 @@ async function carregarTabela() {
         console.error("Erro ao carregar dados:", error);
     }
 }
+
+function montarTabela(dados) {
+    const tabela = document.querySelector("#tabela1 tbody");
+    tabela.innerHTML = "";
+
+    dados.forEach(item => {
+        const saldoFinal = item.Saldo - item.Baixas;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.Card}</td>
+            <td>${item.GN}</td>
+            <td>${item.Grupo}</td>
+            <td>${item.Status}</td>
+            <td>${item.Produto}</td>
+            <td>${item.DataInicio}</td>
+            <td>${item.DataFim}</td>
+            <td>R$ ${item.Saldo.toLocaleString("pt-BR")}</td>
+            <td>R$ ${item.Baixas.toLocaleString("pt-BR")}</td>
+            <td>R$ ${saldoFinal.toLocaleString("pt-BR")}</td>
+        `;
+        tabela.appendChild(tr);
+    });
+}
+
+function preencherFiltros(dados) {
+    const cards = [...new Set(dados.map(d => d.Card))];
+    const gns = [...new Set(dados.map(d => d.GN))];
+    const grupos = [...new Set(dados.map(d => d.Grupo))];
+
+    preencherSelect("filtroCard", cards);
+    preencherSelect("filtroGN", gns);
+    preencherSelect("filtroGrupo", grupos);
+}
+
+function preencherSelect(id, valores) {
+    const select = document.getElementById(id);
+    select.innerHTML = "";
+    valores.forEach(v => {
+        if (v) {
+            const option = document.createElement("option");
+            option.value = v;
+            option.textContent = v;
+            select.appendChild(option);
+        }
+    });
+
+    new Choices(select, {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: `Filtrar por ${id.replace("filtro", "")}`
+    });
+
+    select.addEventListener("change", aplicarFiltros);
+}
+
+function aplicarFiltros() {
+    const filtroCard = Array.from(document.getElementById("filtroCard").selectedOptions).map(o => o.value);
+    const filtroGN = Array.from(document.getElementById("filtroGN").selectedOptions).map(o => o.value);
+    const filtroGrupo = Array.from(document.getElementById("filtroGrupo").selectedOptions).map(o => o.value);
+
+    const filtrado = dadosAgrupados.filter(item => {
+        const matchCard = filtroCard.length === 0 || filtroCard.includes(item.Card);
+        const matchGN = filtroGN.length === 0 || filtroGN.includes(item.GN);
+        const matchGrupo = filtroGrupo.length === 0 || filtroGrupo.includes(item.Grupo);
+        return matchCard && matchGN && matchGrupo;
+    });
+
+    montarTabela(filtrado);
+}
+
+carregarTabela();
