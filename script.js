@@ -1,9 +1,9 @@
-<script>
 const urlBase = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=1131797479&single=true&output=csv";
 const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnazVCv0IdZmkNycSkHDsmx4j5z4GwoABBho_xbGzjWzsOLDdZnWLdz06JEXaL-mG6ovUw/pub?gid=359149770&single=true&output=csv";
 
 let dadosAgrupados = [];
 
+// Mapeamento real das colunas
 const camposBase = {
     Card: "controleIC[CODIGO_CARD]",
     GN: "GN",
@@ -22,7 +22,7 @@ const camposReport = {
 
 async function carregarTabela() {
     try {
-        // Carregar Base
+        // Buscar Base
         const baseResp = await fetch(urlBase);
         const baseData = await baseResp.text();
         const sepBase = baseData.includes(";") ? ";" : ",";
@@ -30,7 +30,7 @@ async function carregarTabela() {
         const baseCabecalho = baseLinhas[0].map(h => h.trim());
         const baseCorpo = baseLinhas.slice(1);
 
-        // Carregar Report
+        // Buscar Report
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
         const sepReport = reportData.includes(";") ? ";" : ",";
@@ -38,18 +38,25 @@ async function carregarTabela() {
         const reportCabecalho = reportLinhas[0].map(h => h.trim());
         const reportCorpo = reportLinhas.slice(1);
 
+        console.log("Cabeçalho Base:", baseCabecalho);
+        console.log("Cabeçalho Report:", reportCabecalho);
+
         // Índices Base
         const idxBase = {};
         for (let key in camposBase) {
             idxBase[key] = baseCabecalho.indexOf(camposBase[key]);
-            if (idxBase[key] === -1) console.warn(`Coluna não encontrada na Base: ${camposBase[key]}`);
+            if (idxBase[key] === -1) {
+                console.error(`❌ Coluna '${camposBase[key]}' não encontrada no CSV base!`);
+            }
         }
 
         // Índices Report
         const idxReport = {};
         for (let key in camposReport) {
             idxReport[key] = reportCabecalho.indexOf(camposReport[key]);
-            if (idxReport[key] === -1) console.warn(`Coluna não encontrada no Report: ${camposReport[key]}`);
+            if (idxReport[key] === -1) {
+                console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
+            }
         }
 
         // Agrupar dados da Base
@@ -169,4 +176,3 @@ function aplicarFiltros() {
 }
 
 carregarTabela();
-</script>
