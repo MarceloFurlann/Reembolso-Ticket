@@ -3,16 +3,18 @@ const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnaz
 
 let dadosAgrupados = [];
 
+// Normaliza cabeçalho (remove colchetes e espaços)
 function normalizar(texto) {
     return texto.replace(/\[|\]/g, "").trim().toLowerCase();
 }
 
+// Mapeamento correto
 const camposBase = {
     Card: "controleIC CODIGO_CARD",
-    GN: "GN", // continua do final
-    Grupo: "controleIC GRUPO_CONSOLIDADOR", // ✅ corrigido
-    Status: "controleIC STATUS_CARD",       // ✅ corrigido
-    Produto: "controleIC PRODUTO",          // ✅ corrigido
+    GN: "GN",
+    Grupo: "controleIC GRUPO_CONSOLIDADOR",
+    Status: "controleIC STATUS_CARD",
+    Produto: "controleIC PRODUTO",
     DataInicio: "controleIC INICIO_VIGENCIA_IC",
     DataFim: "controleIC FIM_VIGENCIA_IC",
     Saldo: "controleIC SALDO_IC"
@@ -42,6 +44,7 @@ async function carregarTabela() {
         console.log("Cabeçalho Base Normalizado:", baseCabecalho);
         console.log("Cabeçalho Report Normalizado:", reportCabecalho);
 
+        // Índices
         const idxBase = {};
         for (let key in camposBase) {
             idxBase[key] = baseCabecalho.indexOf(normalizar(camposBase[key]));
@@ -54,6 +57,7 @@ async function carregarTabela() {
             if (idxReport[key] === -1) console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
         }
 
+        // Agrupamento
         const agrupado = {};
         baseCorpo.forEach(linha => {
             const card = linha[idxBase.Card];
@@ -79,6 +83,7 @@ async function carregarTabela() {
             }
         });
 
+        // Baixas do Report
         reportCorpo.forEach(linha => {
             const cardReport = linha[idxReport.Card];
             if (!cardReport || !agrupado[cardReport]) return;
@@ -169,4 +174,3 @@ function aplicarFiltros() {
 }
 
 carregarTabela();
-
