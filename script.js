@@ -3,15 +3,21 @@ const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnaz
 
 let dadosAgrupados = [];
 
+// Função para normalizar cabeçalho (remove colchetes e espaços extras)
+function normalizar(texto) {
+    return texto.replace(/\[|\]/g, "").trim().toLowerCase();
+}
+
+// Mapeamento sem colchetes
 const camposBase = {
-    Card: "controleIC[CODIGO_CARD]",
+    Card: "controleIC CODIGO_CARD",
     GN: "GN",
     Grupo: "Grupo",
     Status: "Status",
     Produto: "Produto",
-    DataInicio: "controleIC[INICIO_VIGENCIA_IC]",
-    DataFim: "controleIC[FIM_VIGENCIA_IC]",
-    Saldo: "controleIC[SALDO_IC]"
+    DataInicio: "controleIC INICIO_VIGENCIA_IC",
+    DataFim: "controleIC FIM_VIGENCIA_IC",
+    Saldo: "controleIC SALDO_IC"
 };
 
 const camposReport = {
@@ -25,28 +31,28 @@ async function carregarTabela() {
         const baseData = await baseResp.text();
         const sepBase = baseData.includes(";") ? ";" : ",";
         const baseLinhas = baseData.split("\n").map(l => l.split(sepBase));
-        const baseCabecalho = baseLinhas[0].map(h => h.trim());
+        const baseCabecalho = baseLinhas[0].map(h => normalizar(h));
         const baseCorpo = baseLinhas.slice(1);
 
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
         const sepReport = reportData.includes(";") ? ";" : ",";
         const reportLinhas = reportData.split("\n").map(l => l.split(sepReport));
-        const reportCabecalho = reportLinhas[0].map(h => h.trim());
+        const reportCabecalho = reportLinhas[0].map(h => normalizar(h));
         const reportCorpo = reportLinhas.slice(1);
 
-        console.log("Cabeçalho Base:", baseCabecalho);
-        console.log("Cabeçalho Report:", reportCabecalho);
+        console.log("Cabeçalho Base Normalizado:", baseCabecalho);
+        console.log("Cabeçalho Report Normalizado:", reportCabecalho);
 
         const idxBase = {};
         for (let key in camposBase) {
-            idxBase[key] = baseCabecalho.indexOf(camposBase[key]);
+            idxBase[key] = baseCabecalho.indexOf(normalizar(camposBase[key]));
             if (idxBase[key] === -1) console.error(`❌ Coluna '${camposBase[key]}' não encontrada no CSV base!`);
         }
 
         const idxReport = {};
         for (let key in camposReport) {
-            idxReport[key] = reportCabecalho.indexOf(camposReport[key]);
+            idxReport[key] = reportCabecalho.indexOf(normalizar(camposReport[key]));
             if (idxReport[key] === -1) console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
         }
 
