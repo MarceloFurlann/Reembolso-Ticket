@@ -9,10 +9,10 @@ function normalizar(texto) {
 
 const camposBase = {
     Card: "controleIC CODIGO_CARD",
-    GN: "GN",
-    Grupo: "Grupo",
-    Status: "controleIC STATUS_CARD", // ✅ Corrigido
-    Produto: "controleIC PRODUTO",    // ✅ Corrigido
+    GN: "GN", // continua do final
+    Grupo: "controleIC GRUPO_CONSOLIDADOR", // ✅ corrigido
+    Status: "controleIC STATUS_CARD",       // ✅ corrigido
+    Produto: "controleIC PRODUTO",          // ✅ corrigido
     DataInicio: "controleIC INICIO_VIGENCIA_IC",
     DataFim: "controleIC FIM_VIGENCIA_IC",
     Saldo: "controleIC SALDO_IC"
@@ -169,3 +169,4 @@ function aplicarFiltros() {
 }
 
 carregarTabela();
+
