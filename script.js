@@ -8,19 +8,19 @@ function normalizar(texto) {
 }
 
 const camposBase = {
-    Card: "controleiccodigo_card",
-    GN: "gn",
-    Grupo: "grupo",
-    Status: "controleicstatus_card",
-    Produto: "controleicproduto",
-    DataInicio: "controleicinicio_vigencia_ic",
-    DataFim: "controleicfim_vigencia_ic",
-    Saldo: "controleicsaldo_ic"
+    Card: "controleIC CODIGO_CARD",
+    GN: "GN",
+    Grupo: "Grupo",
+    Status: "controleIC STATUS_CARD", // ✅ Corrigido
+    Produto: "controleIC PRODUTO",    // ✅ Corrigido
+    DataInicio: "controleIC INICIO_VIGENCIA_IC",
+    DataFim: "controleIC FIM_VIGENCIA_IC",
+    Saldo: "controleIC SALDO_IC"
 };
 
 const camposReport = {
-    Card: "cod ic",
-    ValorDesc: "valor desconto"
+    Card: "COD IC",
+    ValorDesc: "Valor Desconto"
 };
 
 async function carregarTabela() {
@@ -44,16 +44,15 @@ async function carregarTabela() {
 
         const idxBase = {};
         for (let key in camposBase) {
-            idxBase[key] = baseCabecalho.indexOf(camposBase[key]);
+            idxBase[key] = baseCabecalho.indexOf(normalizar(camposBase[key]));
+            if (idxBase[key] === -1) console.error(`❌ Coluna '${camposBase[key]}' não encontrada no CSV base!`);
         }
 
         const idxReport = {};
         for (let key in camposReport) {
-            idxReport[key] = reportCabecalho.indexOf(camposReport[key]);
+            idxReport[key] = reportCabecalho.indexOf(normalizar(camposReport[key]));
+            if (idxReport[key] === -1) console.error(`❌ Coluna '${camposReport[key]}' não encontrada no CSV report!`);
         }
-
-        console.log("Índices Base:", idxBase);
-        console.log("Índices Report:", idxReport);
 
         const agrupado = {};
         baseCorpo.forEach(linha => {
