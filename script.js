@@ -3,34 +3,65 @@ const urlReport = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZb-Tj3DNnaz
 
 let dadosAgrupados = [];
 
+// Função para normalizar texto (remove acentos e espaços extras)
+function normalizar(texto) {
+    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
 async function carregarTabela() {
     try {
+        // Buscar CSV Base
         const baseResp = await fetch(urlBase);
         const baseData = await baseResp.text();
-        const baseLinhas = baseData.split("\n").map(l => l.split(","));
-        const baseCabecalho = baseLinhas[0].map(h => h.trim());
-        const baseCorpo = baseLinhas.slice(1);
+        console.log("Base CSV:", baseData);
 
+        // Buscar CSV Report
         const reportResp = await fetch(urlReport);
         const reportData = await reportResp.text();
-        const reportLinhas = reportData.split("\n").map(l => l.split(","));
-        const reportCabecalho = reportLinhas[0].map(h => h.trim());
+        console.log("Report CSV:", reportData);
+
+        // Detecta separador
+        const separador = baseData.includes(";") ? ";" : ",";
+        const baseLinhas = baseData.split("\n").map(l => l.split(separador));
+        const reportLinhas = reportData.split("\n").map(l => l.split(separador));
+
+        // Normaliza cabeçalhos
+        const baseCabecalho = baseLinhas[0].map(h => normalizar(h));
+        const reportCabecalho = reportLinhas[0].map(h => normalizar(h));
+
+        const baseCorpo = baseLinhas.slice(1);
         const reportCorpo = reportLinhas.slice(1);
 
-        // Buscar índices pelo nome da coluna
+        console.log("Cabeçalho Base:", baseCabecalho);
+        console.log("Cabeçalho Report:", reportCabecalho);
+
+        // Índices (sem acento)
         const idxCard    = baseCabecalho.indexOf("Card");
         const idxGN      = baseCabecalho.indexOf("GN");
         const idxGrupo   = baseCabecalho.indexOf("Grupo");
         const idxStatus  = baseCabecalho.indexOf("Status");
         const idxProduto = baseCabecalho.indexOf("Produto");
-        const idxDataIni = baseCabecalho.indexOf("Data Início");
+        const idxDataIni = baseCabecalho.indexOf("Data Inicio");
         const idxDataFim = baseCabecalho.indexOf("Data Fim");
         const idxSaldo   = baseCabecalho.indexOf("Saldo");
 
-        // Report
         const idxReportCard = reportCabecalho.indexOf("COD IC");
         const idxValorDesc  = reportCabecalho.indexOf("Valor Desconto");
 
+        console.log("Índices Base:", { idxCard, idxGN, idxGrupo, idxStatus, idxProduto, idxDataIni, idxDataFim, idxSaldo });
+        console.log("Índices Report:", { idxReportCard, idxValorDesc });
+
+        // Validação
+        if (idxCard === -1) {
+            console.error("❌ Coluna 'Card' não encontrada no CSV base!");
+            return;
+        }
+        if (idxReportCard === -1) {
+            console.error("❌ Coluna 'COD IC' não encontrada no CSV report!");
+            return;
+        }
+
+        // Agrupamento
         const agrupado = {};
 
         baseCorpo.forEach(linha => {
@@ -66,6 +97,8 @@ async function carregarTabela() {
         });
 
         dadosAgrupados = Object.values(agrupado);
+        console.log("✅ Dados agrupados:", dadosAgrupados);
+
         preencherFiltros(dadosAgrupados);
         montarTabela(dadosAgrupados);
 
