@@ -22,7 +22,7 @@
         }
 
         .logo {
-            height: 60px; /* Ajuste conforme necessário */
+            height: 60px;
         }
 
         h2 {
@@ -44,6 +44,7 @@
         table {
             border-collapse: collapse;
             width: 100%;
+            margin-top: 20px;
         }
 
         th, td {
@@ -54,6 +55,10 @@
 
         th {
             background-color: #f4f4f4;
+        }
+
+        h3 {
+            margin-top: 40px;
         }
     </style>
 </head>
@@ -79,8 +84,8 @@
         </div>
     </div>
 
-    <!-- Tabela -->
-    <table id="tabela1">
+    <!-- Tabela original dos filtros -->
+    <table id="resultado">
         <thead>
             <tr>
                 <th>Card</th>
@@ -97,6 +102,10 @@
         </thead>
         <tbody></tbody>
     </table>
+
+    <!-- Tabela consolidada -->
+    <h3>Tabela Consolidada</h3>
+    <table id="tabelaConsolidada" border="1" style="width:100%; text-align:left;"></table>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
