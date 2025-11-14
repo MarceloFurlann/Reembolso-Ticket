@@ -1,25 +1,3 @@
-// ======= FUNÇÃO ORIGINAL PARA FILTROS (RESTAURADA) =======
-function renderTable(data) {
-    console.log("RenderTable chamada pelos filtros. Dados:", data);
-    // Se quiser, pode manter a lógica antiga para mostrar a tabela filtrada.
-    // Exemplo simples:
-    const tabela = document.getElementById("resultado");
-    if (!tabela) return;
-    tabela.innerHTML = `
-        <tr>
-            ${data[0].map(h => `<th>${h}</th>`).join("")}
-        </tr>
-    `;
-    for (let i = 1; i < data.length; i++) {
-        tabela.innerHTML += `
-            <tr>
-                ${data[i].map(c => `<td>${c}</td>`).join("")}
-            </tr>
-        `;
-    }
-}
-
-// ======= TABELA CONSOLIDADA =======
 async function montarTabelaConsolidada() {
     const urlPrincipal = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWOZDNQn8PUWZrAWjXX0W31mDgHWubFfxF9pTKRPOAZcGIuf-M4pOik8Kt6Kj3uEJD8zes1SMQP3ez/pub?gid=1498775002&single=true&output=csv";
     const urlBaixas = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuI00U9cr-4BjVPW-AQuobUe6VXH-c-aUtEsbK5FLS2z4OGX8Ek363KMCUeywpfX3J_wYkA4bfY7be/pub?gid=1665327090&single=true&output=csv";
@@ -36,52 +14,35 @@ function processarTabela(csvPrincipal, csvBaixas) {
     const linhasPrincipal = csvPrincipal.split("\n").map(l => l.split(","));
     const linhasBaixas = csvBaixas.split("\n").map(l => l.split(","));
 
-    const headerPrincipal = linhasPrincipal[0].map(h => h.trim());
-    const headerBaixas = linhasBaixas[0].map(h => h.trim());
-
-    // Índices principais
-    const idxCard = headerPrincipal.findIndex(h => h.toLowerCase() === "card");
-    const idxGN = headerPrincipal.findIndex(h => h.toLowerCase() === "gn");
-    const idxGrupo = headerPrincipal.findIndex(h => h.toLowerCase() === "grupo");
-    const idxStatus = headerPrincipal.findIndex(h => h.toLowerCase() === "status");
-    const idxProduto = headerPrincipal.findIndex(h => h.toLowerCase() === "produto");
-    const idxDataInicio = headerPrincipal.findIndex(h => h.toLowerCase() === "data início");
-    const idxDataFim = headerPrincipal.findIndex(h => h.toLowerCase() === "data fim");
-    const idxSaldo = headerPrincipal.findIndex(h => h.toLowerCase() === "saldo");
-
-    // Índices baixas
-    const idxCardBaixas = headerBaixas.findIndex(h => h.toLowerCase() === "card");
-    const idxValorBaixa = headerBaixas.findIndex(h => h.toLowerCase() === "valor baixa");
-
     const agrupado = {};
 
     // Agrupa dados principais
     for (let i = 1; i < linhasPrincipal.length; i++) {
         const linha = linhasPrincipal[i];
-        const card = linha[idxCard]?.trim();
+        const card = linha[0]?.trim(); // Coluna A
         if (!card) continue;
 
         if (!agrupado[card]) {
             agrupado[card] = {
                 card,
-                gn: linha[idxGN]?.trim(),
-                grupo: linha[idxGrupo]?.trim(),
-                status: linha[idxStatus]?.trim(),
-                produto: linha[idxProduto]?.trim(),
-                dataInicio: linha[idxDataInicio]?.trim(),
-                dataFim: linha[idxDataFim]?.trim(),
+                gn: linha[6]?.trim(),        // Coluna G
+                grupo: linha[4]?.trim(),     // Coluna E
+                status: linha[7]?.trim(),    // Coluna H
+                produto: linha[5]?.trim(),   // Coluna F
+                dataInicio: linha[9]?.trim(),// Coluna J
+                dataFim: linha[10]?.trim(),  // Coluna K
                 saldo: 0,
                 baixas: 0
             };
         }
-        agrupado[card].saldo += parseFloat(linha[idxSaldo]?.replace(",", ".") || 0);
+        agrupado[card].saldo += parseFloat(linha[3]?.replace(",", ".") || 0); // Coluna D
     }
 
-    // Soma baixas
+    // Soma baixas (segunda planilha)
     for (let i = 1; i < linhasBaixas.length; i++) {
         const linha = linhasBaixas[i];
-        const card = linha[idxCardBaixas]?.trim();
-        const valor = parseFloat(linha[idxValorBaixa]?.replace(",", ".") || 0);
+        const card = linha[4]?.trim(); // Coluna E
+        const valor = parseFloat(linha[10]?.replace(",", ".") || 0); // Coluna K
         if (agrupado[card]) {
             agrupado[card].baixas += valor;
         }
@@ -123,5 +84,5 @@ function renderTabelaConsolidada(dados) {
     });
 }
 
-// Chame essa função quando quiser montar a tabela consolidada
+// Chame essa função para montar a tabela
 montarTabelaConsolidada();
