@@ -1,3 +1,25 @@
+// ======= FUNÇÃO ORIGINAL PARA FILTROS (RESTAURADA) =======
+function renderTable(data) {
+    console.log("RenderTable chamada pelos filtros. Dados:", data);
+    // Se quiser, pode manter a lógica antiga para mostrar a tabela filtrada.
+    // Exemplo simples:
+    const tabela = document.getElementById("resultado");
+    if (!tabela) return;
+    tabela.innerHTML = `
+        <tr>
+            ${data[0].map(h => `<th>${h}</th>`).join("")}
+        </tr>
+    `;
+    for (let i = 1; i < data.length; i++) {
+        tabela.innerHTML += `
+            <tr>
+                ${data[i].map(c => `<td>${c}</td>`).join("")}
+            </tr>
+        `;
+    }
+}
+
+// ======= TABELA CONSOLIDADA =======
 async function montarTabelaConsolidada() {
     const urlPrincipal = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWOZDNQn8PUWZrAWjXX0W31mDgHWubFfxF9pTKRPOAZcGIuf-M4pOik8Kt6Kj3uEJD8zes1SMQP3ez/pub?gid=1498775002&single=true&output=csv";
     const urlBaixas = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuI00U9cr-4BjVPW-AQuobUe6VXH-c-aUtEsbK5FLS2z4OGX8Ek363KMCUeywpfX3J_wYkA4bfY7be/pub?gid=1665327090&single=true&output=csv";
@@ -101,5 +123,5 @@ function renderTabelaConsolidada(dados) {
     });
 }
 
-// Chame essa função quando quiser montar a tabela
+// Chame essa função quando quiser montar a tabela consolidada
 montarTabelaConsolidada();
