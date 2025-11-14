@@ -1,33 +1,41 @@
-const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRBjNPknsVPI5i6VJFkO9kBPQhyRFd8xchZdeR9X1tQo78DXlih2KQoI1dWnqPN4jSWTdWnbQ370SA/pub?gid=455385627&single=true&output=csv";
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5jGUplcM8sRYZ0iUr9MjOTU8Awr1GNlNyXe0gRjatPjplLgpiR4aG68ZxI4mBNQ9zQLynwU3tg7zZ/pub?gid=1319172131&single=true&output=csv";
+
+// Função para normalizar cabeçalho
+function normalizar(texto) {
+    return texto.replace(/\[|\]/g, "").trim().toLowerCase();
+}
 
 async function carregarFiltros() {
     try {
         const resp = await fetch(urlCSV);
         const csvText = await resp.text();
 
-        // Detecta separador ("," ou ";")
         const sep = csvText.includes(";") ? ";" : ",";
         const linhas = csvText.split("\n").map(l => l.split(sep));
 
-        // Cabeçalho e corpo
-        const cabecalho = linhas[0].map(h => h.trim());
+        const cabecalhoOriginal = linhas[0];
+        const cabecalho = cabecalhoOriginal.map(h => normalizar(h));
         const corpo = linhas.slice(1);
 
-        console.log("Cabeçalho detectado:", cabecalho);
+        console.log("Cabeçalho normalizado:", cabecalho);
 
-        // Índices das colunas (A = 0, F = 5, AY = precisa calcular)
-        const idxCard = 0; // Coluna A
-        const idxGrupo = 5; // Coluna F
-        const idxGN = cabecalho.findIndex(h => h.toLowerCase() === "gn"); // Busca pelo nome GN
+        // Busca índices pelo nome normalizado
+        const idxCard = cabecalho.indexOf("controleic codigo_card");
+        const idxGrupo = cabecalho.indexOf("grupo");
+        const idxGN = cabecalho.indexOf("gn");
 
-        console.log(`Índice GN detectado: ${idxGN}`);
+        console.log(`Índices detectados -> Card: ${idxCard}, Grupo: ${idxGrupo}, GN: ${idxGN}`);
+
+        if (idxCard === -1 || idxGrupo === -1 || idxGN === -1) {
+            console.error("Erro: não encontrou uma das colunas (Card, Grupo ou GN). Verifique cabeçalho.");
+            return;
+        }
 
         // Extrai valores únicos
         const cards = [...new Set(corpo.map(l => l[idxCard]?.trim()).filter(v => v))];
         const grupos = [...new Set(corpo.map(l => l[idxGrupo]?.trim()).filter(v => v))];
-        const gns = idxGN !== -1 ? [...new Set(corpo.map(l => l[idxGN]?.trim()).filter(v => v))] : [];
+        const gns = [...new Set(corpo.map(l => l[idxGN]?.trim()).filter(v => v))];
 
-        // Preenche selects
         preencherSelect("filtroCard", cards);
         preencherSelect("filtroGN", gns);
         preencherSelect("filtroGrupo", grupos);
@@ -47,7 +55,6 @@ function preencherSelect(id, valores) {
         select.appendChild(option);
     });
 
-    // Ativa Choices.js
     new Choices(select, {
         removeItemButton: true,
         searchEnabled: true,
@@ -57,4 +64,3 @@ function preencherSelect(id, valores) {
 }
 
 carregarFiltros();
-
