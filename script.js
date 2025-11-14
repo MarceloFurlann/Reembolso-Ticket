@@ -1,66 +1,59 @@
-const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5jGUplcM8sRYZ0iUr9MjOTU8Awr1GNlNyXe0gRjatPjplLgpiR4aG68ZxI4mBNQ9zQLynwU3tg7zZ/pub?gid=1319172131&single=true&output=csv";
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
-// Função para normalizar cabeçalho
-function normalizar(texto) {
-    return texto.replace(/\[|\]/g, "").trim().toLowerCase();
-}
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-async function carregarFiltros() {
-    try {
-        const resp = await fetch(urlCSV);
-        const csvText = await resp.text();
+public class FiltroCSV {
+    public static void main(String[] args) {
+        String inputFile = "Base - Base.csv";
+        String outputFile = "resultado_filtrado.csv";
 
-        const sep = csvText.includes(";") ? ";" : ",";
-        const linhas = csvText.split("\n").map(l => l.split(sep));
+        // Filtros (pode alterar conforme necessário)
+        String filtroCard = "IC-05795";
+        String filtroGN = "Kenia Hamid";
+        String filtroGrupo = "ESPLANADA";
 
-        const cabecalhoOriginal = linhas[0];
-        const cabecalho = cabecalhoOriginal.map(h => normalizar(h));
-        const corpo = linhas.slice(1);
+        try (CSVReader reader = new CSVReader(new FileReader(inputFile))) {
+            List<String[]> linhas = reader.readAll();
+            List<String[]> resultado = new ArrayList<>();
 
-        console.log("Cabeçalho normalizado:", cabecalho);
+            // Cabeçalho
+            String[] cabecalho = linhas.get(0);
+            resultado.add(cabecalho);
 
-        // Busca índices pelo nome normalizado
-        const idxCard = cabecalho.indexOf("controleic codigo_card");
-        const idxGrupo = cabecalho.indexOf("grupo");
-        const idxGN = cabecalho.indexOf("gn");
+            // Índices das colunas
+            int idxCard = -1, idxGN = -1, idxGrupo = -1;
+            for (int i = 0; i < cabecalho.length; i++) {
+                if (cabecalho[i].equalsIgnoreCase("Card")) idxCard = i;
+                if (cabecalho[i].equalsIgnoreCase("GN")) idxGN = i;
+                if (cabecalho[i].equalsIgnoreCase("Grupo")) idxGrupo = i;
+            }
 
-        console.log(`Índices detectados -> Card: ${idxCard}, Grupo: ${idxGrupo}, GN: ${idxGN}`);
+            // Filtragem
+            for (int i = 1; i < linhas.size(); i++) {
+                String[] linha = linhas.get(i);
+                boolean matchCard = filtroCard == null || linha[idxCard].equalsIgnoreCase(filtroCard);
+                boolean matchGN = filtroGN == null || linha[idxGN].equalsIgnoreCase(filtroGN);
+                boolean matchGrupo = filtroGrupo == null || linha[idxGrupo].equalsIgnoreCase(filtroGrupo);
 
-        if (idxCard === -1 || idxGrupo === -1 || idxGN === -1) {
-            console.error("Erro: não encontrou uma das colunas (Card, Grupo ou GN). Verifique cabeçalho.");
-            return;
+                if (matchCard && matchGN && matchGrupo) {
+                    resultado.add(linha);
+                }
+            }
+
+            // Exporta resultado
+            try (CSVWriter writer = new CSVWriter(new FileWriter(outputFile))) {
+                writer.writeAll(resultado);
+            }
+
+            System.out.println("Arquivo filtrado gerado: " + outputFile);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        // Extrai valores únicos
-        const cards = [...new Set(corpo.map(l => l[idxCard]?.trim()).filter(v => v))];
-        const grupos = [...new Set(corpo.map(l => l[idxGrupo]?.trim()).filter(v => v))];
-        const gns = [...new Set(corpo.map(l => l[idxGN]?.trim()).filter(v => v))];
-
-        preencherSelect("filtroCard", cards);
-        preencherSelect("filtroGN", gns);
-        preencherSelect("filtroGrupo", grupos);
-
-    } catch (error) {
-        console.error("Erro ao carregar filtros:", error);
     }
 }
-
-function preencherSelect(id, valores) {
-    const select = document.getElementById(id);
-    select.innerHTML = "";
-    valores.forEach(v => {
-        const option = document.createElement("option");
-        option.value = v;
-        option.textContent = v;
-        select.appendChild(option);
-    });
-
-    new Choices(select, {
-        removeItemButton: true,
-        searchEnabled: true,
-        placeholder: true,
-        placeholderValue: `Filtrar por ${id.replace("filtro", "")}`
-    });
-}
-
-carregarFiltros();
