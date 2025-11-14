@@ -1,4 +1,4 @@
-async function carregarDados() {
+async function montarTabelaConsolidada() {
     const urlPrincipal = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWOZDNQn8PUWZrAWjXX0W31mDgHWubFfxF9pTKRPOAZcGIuf-M4pOik8Kt6Kj3uEJD8zes1SMQP3ez/pub?gid=1498775002&single=true&output=csv";
     const urlBaixas = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuI00U9cr-4BjVPW-AQuobUe6VXH-c-aUtEsbK5FLS2z4OGX8Ek363KMCUeywpfX3J_wYkA4bfY7be/pub?gid=1665327090&single=true&output=csv";
 
@@ -74,7 +74,7 @@ function processarTabela(csvPrincipal, csvBaixas) {
 }
 
 function renderTabela(dados) {
-    const tabela = document.getElementById("resultado");
+    const tabela = document.getElementById("tabelaConsolidada");
     tabela.innerHTML = `
         <tr>
             <th>Card</th><th>GN</th><th>Grupo</th><th>Status do Card</th>
@@ -101,4 +101,5 @@ function renderTabela(dados) {
     });
 }
 
-carregarDados();
+// Chame essa função quando quiser montar a tabela
+montarTabelaConsolidada();
