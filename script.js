@@ -31,33 +31,41 @@
         const linhasPrincipal = csvPrincipal.split("\n").map(l => l.split(","));
         const linhasBaixas = csvBaixas.split("\n").map(l => l.split(","));
 
+        // Mapeia cabeçalhos
+        const headersPrincipal = linhasPrincipal[0];
+        const headersBaixas = linhasBaixas[0];
+
+        // Função para pegar índice pelo nome
+        const idxPrincipal = nome => headersPrincipal.indexOf(nome);
+        const idxBaixas = nome => headersBaixas.indexOf(nome);
+
         const agrupado = {};
 
         for (let i = 1; i < linhasPrincipal.length; i++) {
             const linha = linhasPrincipal[i];
-            const card = linha[0]?.trim();
+            const card = linha[idxPrincipal("CARD")]?.trim();
             if (!card) continue;
 
             if (!agrupado[card]) {
                 agrupado[card] = {
                     card,
-                    gn: linha[6]?.trim() || "",
-                    grupo: linha[4]?.trim() || "",
-                    status: linha[7]?.trim() || "",
-                    produto: linha[5]?.trim() || "",
-                    dataInicio: formatDate(linha[9]?.trim() || ""),
-                    dataFim: formatDate(linha[10]?.trim() || ""),
+                    gn: linha[idxPrincipal("GN")]?.trim() || "",
+                    grupo: linha[idxPrincipal("GRUPO")]?.trim() || "",
+                    status: linha[idxPrincipal("STATUS")]?.trim() || "",
+                    produto: linha[idxPrincipal("PRODUTO")]?.trim() || "",
+                    dataInicio: formatDate(linha[idxPrincipal("DATA_INICIO")]?.trim() || ""),
+                    dataFim: formatDate(linha[idxPrincipal("DATA_FIM")]?.trim() || ""),
                     saldo: 0,
                     baixas: 0
                 };
             }
-            agrupado[card].saldo += parseFloat(linha[3]?.replace(",", ".") || 0);
+            agrupado[card].saldo += parseFloat(linha[idxPrincipal("SALDO")]?.replace(",", ".") || 0);
         }
 
         for (let i = 1; i < linhasBaixas.length; i++) {
             const linha = linhasBaixas[i];
-            const card = linha[4]?.trim();
-            const valor = parseFloat(linha[10]?.replace(",", ".") || 0);
+            const card = linha[idxBaixas("CARD")]?.trim();
+            const valor = parseFloat(linha[idxBaixas("VALOR")]?.replace(",", ".") || 0);
             if (agrupado[card]) {
                 agrupado[card].baixas += valor;
             }
