@@ -1,63 +1,59 @@
-function normalizar(texto) {
-    return texto.replace(/\[|\]/g, "").trim().toLowerCase();
-}
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5jGUplcM8sRYZ0iUr9MjOTU8Awr1GNlNyXe0gRjatPjplLgpiR4aG68ZxI4mBNQ9zQLynwU3tg7zZ/pub?gid=1319172131&single=true&output=csv";
 
-// Similaridade simples (baseada em caracteres iguais na mesma posição)
-function similaridade(a, b) {
-    a = normalizar(a);
-    b = normalizar(b);
-    const maxLen = Math.max(a.length, b.length);
-    let matches = 0;
-    for (let i = 0; i < Math.min(a.length, b.length); i++) {
-        if (a[i] === b[i]) matches++;
+async function carregarFiltros() {
+    try {
+        const resp = await fetch(urlCSV);
+        const csvText = await resp.text();
+
+        // Detecta separador ("," ou ";")
+        const sep = csvText.includes(";") ? ";" : ",";
+        const linhas = csvText.split("\n").map(l => l.split(sep));
+
+        // Cabeçalho e corpo
+        const cabecalho = linhas[0];
+        const corpo = linhas.slice(1);
+
+        console.log("Cabeçalho:", cabecalho);
+
+        // Índices das colunas (A = 0, F = 5, AY depende do número de colunas)
+        const idxCard = 0; // Coluna A
+        const idxGrupo = 5; // Coluna F
+        const idxGN = cabecalho.findIndex(h => h.trim().toLowerCase() === "gn"); // Busca GN pelo nome
+
+        console.log(`Índice GN detectado: ${idxGN}`);
+
+        // Extrai valores únicos
+        const cards = [...new Set(corpo.map(l => l[idxCard].trim()).filter(v => v))];
+        const grupos = [...new Set(corpo.map(l => l[idxGrupo].trim()).filter(v => v))];
+        const gns = [...new Set(corpo.map(l => l[idxGN].trim()).filter(v => v))];
+
+        // Preenche selects
+        preencherSelect("filtroCard", cards);
+        preencherSelect("filtroGN", gns);
+        preencherSelect("filtroGrupo", grupos);
+
+    } catch (error) {
+        console.error("Erro ao carregar filtros:", error);
     }
-    return matches / maxLen;
 }
 
-// Encontra coluna mais parecida
-function encontrarColunaEsperada(cabecalho, esperado) {
-    let melhorColuna = null;
-    let melhorScore = 0;
-    cabecalho.forEach(col => {
-        const score = similaridade(col, esperado);
-        if (score > melhorScore) {
-            melhorScore = score;
-            melhorColuna = col;
-        }
+function preencherSelect(id, valores) {
+    const select = document.getElementById(id);
+    select.innerHTML = "";
+    valores.forEach(v => {
+        const option = document.createElement("option");
+        option.value = v;
+        option.textContent = v;
+        select.appendChild(option);
     });
-    return melhorScore >= 0.5 ? melhorColuna : null; // Aceita se >= 50%
+
+    // Ativa Choices.js
+    new Choices(select, {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: `Filtrar por ${id.replace("filtro", "")}`
+    });
 }
 
-// Mapeia colunas automaticamente
-function mapearColunas(cabecalho, camposEsperados) {
-    const mapeamento = {};
-    for (let key in camposEsperados) {
-        const esperado = camposEsperados[key];
-        const colunaEncontrada = encontrarColunaEsperada(cabecalho, esperado);
-        if (colunaEncontrada) {
-            console.log(`✅ Mapeado '${esperado}' -> '${colunaEncontrada}'`);
-            mapeamento[key] = cabecalho.indexOf(colunaEncontrada);
-        } else {
-            console.warn(`❌ Não encontrado: '${esperado}'`);
-            mapeamento[key] = -1;
-        }
-    }
-    return mapeamento;
-}
-
-// Dentro da função carregarTabela(), substitua os loops por:
-const idxBase = mapearColunas(baseCabecalho, {
-    Card: "codigo_card",
-    GN: "gn",
-    Grupo: "grupo",
-    Status: "status",
-    Produto: "produto",
-    DataInicio: "inicio_vigencia_ic",
-    DataFim: "fim_vigencia_ic",
-    Saldo: "saldo_ic"
-});
-
-const idxReport = mapearColunas(reportCabecalho, {
-    Card: "cod ic",
-    ValorDesc: "valor desconto"
-});
+carregarFiltros();
