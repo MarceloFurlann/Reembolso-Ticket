@@ -1,9 +1,8 @@
-// Função para normalizar cabeçalho
 function normalizar(texto) {
     return texto.replace(/\[|\]/g, "").trim().toLowerCase();
 }
 
-// Função para calcular similaridade entre duas strings
+// Similaridade simples (baseada em caracteres iguais na mesma posição)
 function similaridade(a, b) {
     a = normalizar(a);
     b = normalizar(b);
@@ -15,7 +14,7 @@ function similaridade(a, b) {
     return matches / maxLen;
 }
 
-// Função para encontrar coluna mais parecida
+// Encontra coluna mais parecida
 function encontrarColunaEsperada(cabecalho, esperado) {
     let melhorColuna = null;
     let melhorScore = 0;
@@ -26,10 +25,10 @@ function encontrarColunaEsperada(cabecalho, esperado) {
             melhorColuna = col;
         }
     });
-    return melhorScore >= 0.5 ? melhorColuna : null; // Aceita se similaridade >= 50%
+    return melhorScore >= 0.5 ? melhorColuna : null; // Aceita se >= 50%
 }
 
-// Função para mapear colunas automaticamente
+// Mapeia colunas automaticamente
 function mapearColunas(cabecalho, camposEsperados) {
     const mapeamento = {};
     for (let key in camposEsperados) {
@@ -46,7 +45,7 @@ function mapearColunas(cabecalho, camposEsperados) {
     return mapeamento;
 }
 
-// Exemplo de uso dentro do seu código:
+// Dentro da função carregarTabela(), substitua os loops por:
 const idxBase = mapearColunas(baseCabecalho, {
     Card: "codigo_card",
     GN: "gn",
