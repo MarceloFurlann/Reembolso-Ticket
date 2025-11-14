@@ -4,7 +4,6 @@ async function carregarCSV() {
     try {
         const response = await fetch(url);
         const text = await response.text();
-
         processCSV(text);
     } catch (error) {
         console.error("Erro ao carregar CSV:", error);
@@ -17,7 +16,6 @@ function processCSV(data) {
 
     console.log("Cabeçalho normalizado:", header);
 
-    // Mapeamento dinâmico
     const idxCard = header.findIndex(h => h.toLowerCase() === "card");
     const idxGN = header.findIndex(h => h.toLowerCase() === "gn");
     const idxGrupo = header.findIndex(h => h.toLowerCase() === "grupo");
@@ -29,10 +27,7 @@ function processCSV(data) {
         return;
     }
 
-    // Aqui você pode popular os filtros dinamicamente
     popularFiltros(linhas, idxCard, idxGN, idxGrupo);
-
-    // Renderiza tabela inicial
     renderTable(linhas);
 }
 
@@ -65,5 +60,4 @@ function preencherSelect(id, valores) {
     });
 }
 
-// Chama a função ao carregar a página
 carregarCSV();
