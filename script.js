@@ -70,10 +70,10 @@ function processarTabela(csvPrincipal, csvBaixas) {
         item.saldoFinal = item.saldo - item.baixas;
     });
 
-    renderTabela(Object.values(agrupado));
+    renderTabelaConsolidada(Object.values(agrupado));
 }
 
-function renderTabela(dados) {
+function renderTabelaConsolidada(dados) {
     const tabela = document.getElementById("tabelaConsolidada");
     tabela.innerHTML = `
         <tr>
