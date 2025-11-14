@@ -4,62 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saldo de Reembolso</title>
-
-    <!-- Choices.js para filtros interativos -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
-
     <style>
-        body {
-            font-family: "Century Gothic", Arial, sans-serif;
-            margin: 20px;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            height: 60px;
-        }
-
-        h2 {
-            margin: 0;
-        }
-
-        .filtros {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filtros label {
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-
-        h3 {
-            margin-top: 40px;
-        }
+        body { font-family: "Century Gothic", Arial, sans-serif; margin: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .logo { height: 60px; }
+        h2 { margin: 0; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
     </style>
 </head>
 <body>
@@ -68,23 +20,6 @@
         <img class="logo" src="https://cdn.cookielaw.org/logos/3eee82c0-9eb6-4614-b723-8d597fdcce8d/01990669-53ca-7e07-b027-a305e1e7b1f6/e7e9a2f5-d961-403e-a109-033228694c0e/Ticket-Edenred-Logo-Color-RGB111_(2).png" alt="Logo Edenred">
     </header>
 
-    <!-- Filtros -->
-    <div class="filtros">
-        <div>
-            <label for="filtroCard">Card:</label>
-            <select id="filtroCard" multiple></select>
-        </div>
-        <div>
-            <label for="filtroGN">GN:</label>
-            <select id="filtroGN" multiple></select>
-        </div>
-        <div>
-            <label for="filtroGrupo">Grupo:</label>
-            <select id="filtroGrupo" multiple></select>
-        </div>
-    </div>
-
-    <!-- Tabela Consolidada -->
     <h3>Tabela Consolidada</h3>
     <table id="tabelaConsolidada">
         <thead>
@@ -104,8 +39,6 @@
         <tbody></tbody>
     </table>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
         async function montarTabelaConsolidada() {
             const urlPrincipal = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWOZDNQn8PUWZrAWjXX0W31mDgHWubFfxF9pTKRPOAZcGIuf-M4pOik8Kt6Kj3uEJD8zes1SMQP3ez/pub?gid=1498775002&single=true&output=csv";
@@ -120,14 +53,11 @@
         }
 
         function formatCurrency(value) {
-            return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            }).format(value);
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
         }
 
         function formatDate(value) {
-            if (!value) return "";
+            if (!value || value.trim() === "") return "";
             const clean = value.replace(/[^0-9]/g, "");
             if (clean.length === 8) {
                 return `${clean.slice(0,2)}/${clean.slice(2,4)}/${clean.slice(4)}`;
@@ -139,33 +69,47 @@
             const linhasPrincipal = csvPrincipal.split("\n").map(l => l.split(","));
             const linhasBaixas = csvBaixas.split("\n").map(l => l.split(","));
 
+            const headerPrincipal = linhasPrincipal[0].map(h => h.trim().toLowerCase());
+            const idxCard = headerPrincipal.indexOf("card");
+            const idxGN = headerPrincipal.indexOf("gn");
+            const idxGrupo = headerPrincipal.indexOf("grupo");
+            const idxStatus = headerPrincipal.indexOf("status");
+            const idxProduto = headerPrincipal.indexOf("produto");
+            const idxDataInicio = headerPrincipal.indexOf("data início");
+            const idxDataFim = headerPrincipal.indexOf("data fim");
+            const idxSaldo = headerPrincipal.indexOf("saldo");
+
+            const headerBaixas = linhasBaixas[0].map(h => h.trim().toLowerCase());
+            const idxCardBaixas = headerBaixas.indexOf("card");
+            const idxValorBaixa = headerBaixas.indexOf("valor baixa");
+
             const agrupado = {};
 
             for (let i = 1; i < linhasPrincipal.length; i++) {
                 const linha = linhasPrincipal[i];
-                const card = linha[0]?.trim();
+                const card = linha[idxCard]?.trim();
                 if (!card) continue;
 
                 if (!agrupado[card]) {
                     agrupado[card] = {
                         card,
-                        gn: linha[6]?.trim() || "",
-                        grupo: linha[4]?.trim() || "",
-                        status: linha[7]?.trim() || "",
-                        produto: linha[5]?.trim() || "",
-                        dataInicio: formatDate(linha[9]?.trim() || ""),
-                        dataFim: formatDate(linha[10]?.trim() || ""),
+                        gn: linha[idxGN] || "",
+                        grupo: linha[idxGrupo] || "",
+                        status: linha[idxStatus] || "",
+                        produto: linha[idxProduto] || "",
+                        dataInicio: formatDate(linha[idxDataInicio] || ""),
+                        dataFim: formatDate(linha[idxDataFim] || ""),
                         saldo: 0,
                         baixas: 0
                     };
                 }
-                agrupado[card].saldo += parseFloat(linha[3]?.replace(",", ".") || 0);
+                agrupado[card].saldo += parseFloat(linha[idxSaldo]?.replace(",", ".") || 0);
             }
 
             for (let i = 1; i < linhasBaixas.length; i++) {
                 const linha = linhasBaixas[i];
-                const card = linha[4]?.trim();
-                const valor = parseFloat(linha[10]?.replace(",", ".") || 0);
+                const card = linha[idxCardBaixas]?.trim();
+                const valor = parseFloat(linha[idxValorBaixa]?.replace(",", ".") || 0);
                 if (agrupado[card]) {
                     agrupado[card].baixas += valor;
                 }
