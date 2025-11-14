@@ -10,22 +10,22 @@ async function carregarFiltros() {
         const linhas = csvText.split("\n").map(l => l.split(sep));
 
         // Cabeçalho e corpo
-        const cabecalho = linhas[0];
+        const cabecalho = linhas[0].map(h => h.trim());
         const corpo = linhas.slice(1);
 
-        console.log("Cabeçalho:", cabecalho);
+        console.log("Cabeçalho detectado:", cabecalho);
 
-        // Índices das colunas (A = 0, F = 5, AY depende do número de colunas)
+        // Índices das colunas (A = 0, F = 5, AY = precisa calcular)
         const idxCard = 0; // Coluna A
         const idxGrupo = 5; // Coluna F
-        const idxGN = cabecalho.findIndex(h => h.trim().toLowerCase() === "gn"); // Busca GN pelo nome
+        const idxGN = cabecalho.findIndex(h => h.toLowerCase() === "gn"); // Busca pelo nome GN
 
         console.log(`Índice GN detectado: ${idxGN}`);
 
         // Extrai valores únicos
-        const cards = [...new Set(corpo.map(l => l[idxCard].trim()).filter(v => v))];
-        const grupos = [...new Set(corpo.map(l => l[idxGrupo].trim()).filter(v => v))];
-        const gns = [...new Set(corpo.map(l => l[idxGN].trim()).filter(v => v))];
+        const cards = [...new Set(corpo.map(l => l[idxCard]?.trim()).filter(v => v))];
+        const grupos = [...new Set(corpo.map(l => l[idxGrupo]?.trim()).filter(v => v))];
+        const gns = idxGN !== -1 ? [...new Set(corpo.map(l => l[idxGN]?.trim()).filter(v => v))] : [];
 
         // Preenche selects
         preencherSelect("filtroCard", cards);
